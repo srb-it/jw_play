@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube Roulette Game</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="hero panel">
+        <div>
+          <p class="eyebrow">정상부녀</p>
+          <h1>Happy Family 유튜브 룰렛 게임</h1>
+          <p class="subtitle">좋아하는 유튜브 링크를 여러 줄로 붙여 넣고 돌리면, 당첨 영상을 바로 재생해요.</p>
+        </div>
+      </section>
+
+      <section class="layout">
+        <section class="panel controls">
+          <label class="bulk-input">
+            <span>유튜브 링크 붙여넣기</span>
+            <textarea
+              id="video-urls"
+              placeholder="https://youtu.be/example-1&#10;https://youtu.be/example-2&#10;https://youtu.be/example-3"
+            ></textarea>
+          </label>
+
+          <div class="actions">
+            <button id="load-button" class="primary">불러오기</button>
+            <button id="spin-button" class="accent" disabled>돌리기</button>
+            <button id="save-button">링크 저장하기</button>
+          </div>
+
+          <p id="status" class="status">유튜브 링크를 두 개 이상 줄바꿈으로 붙여 넣어 주세요.</p>
+          <p id="server-note" class="server-note" hidden></p>
+        </section>
+
+        <section class="panel player-panel">
+          <div class="player-head">
+            <div>
+              <p class="winner-label">Now Playing</p>
+              <h2 class="player-title">당첨 영상 플레이어</h2>
+            </div>
+          </div>
+
+          <div class="player-wrap">
+            <iframe
+              id="player-frame"
+              title="YouTube player"
+              src="about:blank"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allowfullscreen
+            ></iframe>
+          </div>
+        </section>
+
+        <section class="panel stage">
+          <div class="roulette-shell">
+            <div class="roulette-marker" aria-hidden="true"></div>
+            <div id="roulette-strip" class="roulette-strip"></div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
