@@ -3,6 +3,12 @@ const loadButton = document.getElementById("load-button");
 const spinButton = document.getElementById("spin-button");
 const pickButton = document.getElementById("pick-button");
 const saveButton = document.getElementById("save-button");
+const playActions = document.getElementById("play-actions");
+const mobilePlaySlot = document.getElementById("mobile-play-slot");
+const linkActions = document.getElementById("link-actions");
+const linkSettings = document.getElementById("link-settings");
+const linkSettingsToggle = document.getElementById("link-settings-toggle");
+const mobileLayout = window.matchMedia("(max-width: 720px)");
 const statusText = document.getElementById("status");
 const playbackStatus = document.getElementById("playback-status");
 const serverNote = document.getElementById("server-note");
@@ -217,6 +223,9 @@ function getPlayerUrl(videoId, muted) {
 
 function playSelectedVideo(videoId, muted = true) {
   playerFrame.src = getPlayerUrl(videoId, muted);
+  if (mobileLayout.matches) {
+    playerFrame.scrollIntoView({ block: "nearest" });
+  }
 }
 
 function ensureAudioContext() {
@@ -329,6 +338,23 @@ function loadVideos() {
   updateStatus(`${videos.length}개의 영상을 불러왔어요.`);
 }
 
+function setLinkSettingsExpanded(expanded) {
+  linkSettings.hidden = !expanded;
+  linkSettingsToggle.setAttribute("aria-expanded", String(expanded));
+}
+
+function updateResponsiveControls() {
+  const mobile = mobileLayout.matches;
+  const destination = mobile ? mobilePlaySlot : linkActions;
+  destination.append(playActions);
+  linkSettingsToggle.hidden = !mobile;
+
+  if (mobile && !spinning && !videos.length) {
+    loadVideos();
+  }
+  setLinkSettingsExpanded(!mobile || (spinButton.disabled && !spinning));
+}
+
 function openVideoPicker() {
   if (spinning || pickButton.disabled || videoPicker.open || quiz.open) {
     return;
@@ -369,15 +395,16 @@ function spinRoulette() {
   const sequence = buildRouletteSequence();
   resetRoulettePosition(sequence);
 
-  const itemWidth = 168 + 12;
-  const targetIndex = videos.length * 5 + winnerIndex;
-  const shellWidth = rouletteStrip.parentElement.clientWidth;
-  const offset = targetIndex * itemWidth - shellWidth / 2 + itemWidth / 2;
+  const winnerCard = rouletteStrip.children[videos.length * 5 + winnerIndex];
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
+      const cardBounds = winnerCard.getBoundingClientRect();
+      const stripLeft = rouletteStrip.getBoundingClientRect().left;
+      const shellCenter = rouletteStrip.parentElement.clientWidth / 2;
+      const offset = shellCenter - (cardBounds.left - stripLeft + cardBounds.width / 2);
       rouletteStrip.style.transition = "transform 4.5s cubic-bezier(0.14, 0.82, 0.18, 1)";
-      rouletteStrip.style.transform = `translateX(-${offset}px)`;
+      rouletteStrip.style.transform = `translateX(${offset}px)`;
     });
   });
 
@@ -521,8 +548,13 @@ quiz.addEventListener("close", () => {
   }
 });
 saveButton.addEventListener("click", saveUrlsToStorage);
+linkSettingsToggle.addEventListener("click", () => setLinkSettingsExpanded(linkSettings.hidden));
+mobileLayout.addEventListener("change", updateResponsiveControls);
 updateServerNote();
 redirectToLocalServer();
 setWinner(null);
-resetRoulettePosition(buildPlaceholderVideos());
 restoreSavedUrls();
+updateResponsiveControls();
+if (!videos.length) {
+  resetRoulettePosition(buildPlaceholderVideos());
+}
