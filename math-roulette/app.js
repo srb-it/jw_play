@@ -57,6 +57,23 @@ const DEFAULT_URLS = [
   "https://youtu.be/HUMYQ-4sc6g?si=pL1SJCV6V8X7lZo-",
   "https://youtu.be/Nn_d3vdwpJ8?si=9klwSwIezdhOuF7B",
 ].join("\n");
+const FAMILY_API = "https://happy-family-roulette-sync.cloudygerbil.chatgpt.site/api/lists";
+const FAMILY_STORAGE_KEY = "math-roulette-family";
+const FAMILY_CODE_PATTERN = /^[a-f0-9]{32}$/;
+const familyJoin = document.getElementById("family-join");
+const familyConnected = document.getElementById("family-connected");
+const familyCodeInput = document.getElementById("family-code");
+const familyActiveCode = document.getElementById("family-active-code");
+const familyCreate = document.getElementById("family-create");
+const familyConnect = document.getElementById("family-connect");
+const familyDisconnect = document.getElementById("family-disconnect");
+const familyCopy = document.getElementById("family-copy");
+const familyStatus = document.getElementById("family-status");
+let family = null;
+let familyBusy = false;
+let familyRefreshing = false;
+let familyGeneration = 0;
+let familyReloadPending = false;
 
 function extractVideoId(rawUrl) {
   if (!rawUrl) {
@@ -306,7 +323,7 @@ function startSpinMusic() {
   }
 }
 
-function loadVideos() {
+function loadVideos(preservePlayback = false) {
   const rawUrls = parseRawUrls(urlsTextarea.value);
   const parsed = rawUrls.map((rawUrl, index) => {
     const extracted = extractVideoId(rawUrl);
@@ -332,9 +349,11 @@ function loadVideos() {
   resetRoulettePosition(buildRouletteSequence());
   spinButton.disabled = false;
   pickButton.disabled = false;
-  setWinner(null);
-  playerFrame.src = "about:blank";
-  playbackStatus.textContent = "";
+  if (!preservePlayback) {
+    setWinner(null);
+    playerFrame.src = "about:blank";
+    playbackStatus.textContent = "";
+  }
   updateStatus(`${videos.length}개의 영상을 불러왔어요.`);
 }
 
@@ -534,7 +553,107 @@ function checkQuizAnswer(button) {
   playQuizResultSound(correct);
 }
 
-loadButton.addEventListener("click", loadVideos);
+function renderFamilyControls() {
+  familyJoin.hidden = Boolean(family);
+  familyConnected.hidden = !family;
+  familyActiveCode.value = family?.code ?? "";
+}
+
+function restoreFamily() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(FAMILY_STORAGE_KEY));
+    if (FAMILY_CODE_PATTERN.test(saved?.code) && typeof saved.urls === "string") {
+      family = saved;
+      urlsTextarea.value = saved.urls;
+      loadVideos(true);
+      familyStatus.textContent = "가족 목록에 연결되어 있어요.";
+    }
+  } catch {
+    familyStatus.textContent = "이 기기에서 가족 연결 정보를 읽을 수 없어요.";
+  }
+  renderFamilyControls();
+}
+
+async function requestFamily(action, code, videoIds) {
+  const response = await fetch(FAMILY_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action, code, videoIds }),
+    signal: AbortSignal.timeout(8000)
+  });
+  if (response.status === 404) {
+    throw new Error("가족 코드를 찾을 수 없어요. 코드를 다시 확인해 주세요.");
+  }
+  if (!response.ok) throw new Error("가족 목록을 연결하거나 저장하지 못했어요. 잠시 후 다시 시도해 주세요.");
+  return response.json();
+}
+
+function updateFamilyList(code, videoIds, replaceInput) {
+  const urls = videoIds.map((id) => `https://youtu.be/${id}`).join("\n");
+  familyReloadPending = familyReloadPending || urls !== family?.urls;
+  family = { code, urls };
+  window.localStorage.setItem(FAMILY_STORAGE_KEY, JSON.stringify(family));
+  if (replaceInput) urlsTextarea.value = urls;
+  if (familyReloadPending && urlsTextarea.value === urls && !spinning && !quiz.open && !videoPicker.open) {
+    loadVideos(true);
+    familyReloadPending = false;
+  }
+}
+
+async function changeFamily(action) {
+  if (familyBusy) return;
+  const draft = urlsTextarea.value;
+  const code = action === "join" ? familyCodeInput.value.trim().toLowerCase() : family?.code;
+  const videoIds = action === "join" ? undefined :
+    parseRawUrls(draft).map((url) => sanitizeVideoId(extractVideoId(url)));
+  if (action === "join" && !FAMILY_CODE_PATTERN.test(code)) {
+    familyStatus.textContent = "가족 코드를 다시 확인해 주세요.";
+    return;
+  }
+  if (videoIds && (videoIds.length < 2 || videoIds.length > 50 || videoIds.some((id) => !id))) {
+    familyStatus.textContent = "유튜브 링크를 한 줄에 하나씩 2~50개 넣어 주세요.";
+    if (action === "save") updateStatus(familyStatus.textContent);
+    return;
+  }
+
+  familyGeneration += 1;
+  familyBusy = true;
+  for (const button of [saveButton, familyCreate, familyConnect, familyDisconnect]) button.disabled = true;
+  familyStatus.textContent = action === "save" ? "가족 목록 저장 중…" : "가족 목록 연결 중…";
+  try {
+    const result = await requestFamily(action === "join" ? "read" : action, code, videoIds);
+    updateFamilyList(result.code ?? code, result.videoIds, urlsTextarea.value === draft);
+    renderFamilyControls();
+    familyStatus.textContent = action === "save" ? "가족 목록에 저장했어요." : "가족 목록에 연결했어요.";
+  } catch (error) {
+    familyStatus.textContent = error.name === "Error" ? error.message : "네트워크를 확인하고 다시 시도해 주세요.";
+  } finally {
+    familyBusy = false;
+    for (const button of [saveButton, familyCreate, familyConnect, familyDisconnect]) button.disabled = false;
+    if (action === "save") updateStatus(familyStatus.textContent);
+  }
+}
+
+async function refreshFamily() {
+  if (!family || familyBusy || familyRefreshing || spinning || quiz.open || videoPicker.open ||
+      document.hidden || urlsTextarea.value !== family.urls) return;
+  const { code, urls } = family;
+  const generation = familyGeneration;
+  familyRefreshing = true;
+  try {
+    const result = await requestFamily("read", code);
+    if (generation !== familyGeneration || urlsTextarea.value !== urls ||
+        spinning || quiz.open || videoPicker.open) return;
+    updateFamilyList(code, result.videoIds, true);
+    familyStatus.textContent = "가족 목록에 연결되어 있어요.";
+  } catch {
+    if (generation === familyGeneration) familyStatus.textContent = "가족 목록을 새로 가져오지 못했어요.";
+  } finally {
+    familyRefreshing = false;
+  }
+}
+
+loadButton.addEventListener("click", () => loadVideos());
 spinButton.addEventListener("click", () => openQuiz());
 pickButton.addEventListener("click", openVideoPicker);
 pickerClose.addEventListener("click", () => videoPicker.close());
@@ -547,14 +666,44 @@ quiz.addEventListener("close", () => {
     clearQuizResult();
   }
 });
-saveButton.addEventListener("click", saveUrlsToStorage);
+saveButton.addEventListener("click", () => family ? changeFamily("save") : saveUrlsToStorage());
+familyJoin.addEventListener("submit", (event) => {
+  event.preventDefault();
+  changeFamily("join");
+});
+familyCreate.addEventListener("click", () => changeFamily("create"));
+familyCopy.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(family.code);
+    familyStatus.textContent = "가족 코드를 복사했어요.";
+  } catch {
+    familyActiveCode.select();
+    familyStatus.textContent = "가족 코드가 선택됐어요.";
+  }
+});
+familyDisconnect.addEventListener("click", () => {
+  familyGeneration += 1;
+  family = null;
+  familyReloadPending = false;
+  window.localStorage.removeItem(FAMILY_STORAGE_KEY);
+  familyCodeInput.value = "";
+  renderFamilyControls();
+  restoreSavedUrls();
+  if (!spinning && !quiz.open && !videoPicker.open) loadVideos(true);
+  familyStatus.textContent = "이 기기의 연결을 해제했어요.";
+});
+window.addEventListener("focus", refreshFamily);
+document.addEventListener("visibilitychange", refreshFamily);
+window.setInterval(refreshFamily, 15000);
 linkSettingsToggle.addEventListener("click", () => setLinkSettingsExpanded(linkSettings.hidden));
 mobileLayout.addEventListener("change", updateResponsiveControls);
 updateServerNote();
 redirectToLocalServer();
 setWinner(null);
 restoreSavedUrls();
+restoreFamily();
 updateResponsiveControls();
 if (!videos.length) {
   resetRoulettePosition(buildPlaceholderVideos());
 }
+refreshFamily();

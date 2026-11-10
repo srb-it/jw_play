@@ -37,6 +37,22 @@
               </div>
             </div>
             <p id="status" class="status" role="status">유튜브 링크를 두 개 이상 줄바꿈으로 붙여 넣어 주세요.</p>
+            <details class="family-sync">
+              <summary>기기 간 동기화</summary>
+              <form id="family-join" class="family-controls">
+                <label for="family-code">가족 코드</label>
+                <input id="family-code" type="text" autocapitalize="off" autocomplete="off" spellcheck="false" />
+                <button id="family-connect" type="submit">연결하기</button>
+                <button id="family-create" type="button">새 가족 목록 만들기</button>
+              </form>
+              <div id="family-connected" class="family-controls" hidden>
+                <label for="family-active-code">내 가족 코드</label>
+                <input id="family-active-code" type="text" readonly spellcheck="false" />
+                <button id="family-copy" type="button">코드 복사</button>
+                <button id="family-disconnect" type="button">이 기기 연결 해제</button>
+              </div>
+              <p id="family-status" class="status" role="status"></p>
+            </details>
           </div>
           <p id="server-note" class="server-note" hidden></p>
         </section>

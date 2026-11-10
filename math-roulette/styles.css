@@ -177,6 +177,40 @@ button:not(.primary):not(.accent) {
   background: #fff;
 }
 
+.family-sync {
+  margin-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+
+.family-sync summary {
+  padding: 10px 0;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.family-controls:not([hidden]) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.family-controls label,
+.family-controls input {
+  flex-basis: 100%;
+}
+
+.family-controls input {
+  min-width: 0;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.family-controls button {
+  min-height: 40px;
+  padding: 8px 12px;
+}
+
 #save-button {
   min-height: 36px;
   padding: 5px 10px;
