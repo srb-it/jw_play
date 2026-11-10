@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Happy Family 덧셈 룰렛</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="hero panel">
+        <div>
+          <p class="eyebrow">정상부녀</p>
+          <h1>Happy Family 덧셈 룰렛</h1>
+        </div>
+      </section>
+
+      <section class="layout">
+        <section class="panel controls">
+          <div class="link-input-head">
+            <label for="video-urls">유튜브 링크 붙여넣기</label>
+            <button id="save-button" type="button">링크 저장하기</button>
+          </div>
+          <textarea
+            id="video-urls"
+            placeholder="https://youtu.be/example-1&#10;https://youtu.be/example-2&#10;https://youtu.be/example-3"
+          ></textarea>
+
+          <div class="actions">
+            <button id="load-button" type="button">링크 불러오기</button>
+            <div class="play-actions">
+              <button id="spin-button" class="accent" type="button" disabled>룰렛 돌리기</button>
+              <button id="pick-button" type="button" disabled>영상 골라 보기</button>
+            </div>
+          </div>
+
+          <p id="status" class="status" role="status">유튜브 링크를 두 개 이상 줄바꿈으로 붙여 넣어 주세요.</p>
+          <p id="server-note" class="server-note" hidden></p>
+        </section>
+
+        <section class="panel player-panel">
+          <div class="player-head">
+            <div class="player-meta">
+              <p class="winner-label">Now Playing</p>
+              <p id="playback-status" class="playback-status" role="status"></p>
+            </div>
+            <h2 class="player-title">영상 플레이어</h2>
+          </div>
+
+          <div class="player-wrap">
+            <iframe
+              id="player-frame"
+              title="YouTube player"
+              src="about:blank"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allowfullscreen
+            ></iframe>
+          </div>
+        </section>
+
+        <section class="panel stage">
+          <div class="roulette-shell">
+            <div class="roulette-marker" aria-hidden="true"></div>
+            <div id="roulette-strip" class="roulette-strip"></div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <dialog id="video-picker" aria-labelledby="picker-title">
+      <header class="quiz-header">
+        <h2 id="picker-title">보고 싶은 영상</h2>
+        <button id="picker-close" type="button" aria-label="영상 선택 닫기" title="영상 선택 닫기">&times;</button>
+      </header>
+      <div id="video-options" class="video-options"></div>
+    </dialog>
+
+    <dialog id="math-quiz" aria-labelledby="quiz-title">
+      <header class="quiz-header">
+        <h2 id="quiz-title">덧셈 퀴즈</h2>
+        <button id="quiz-close" type="button" aria-label="퀴즈 닫기" title="퀴즈 닫기">&times;</button>
+      </header>
+      <p id="quiz-progress" class="quiz-progress"></p>
+      <div class="quiz-question">
+        <p id="quiz-equation"></p>
+        <span id="quiz-mark" class="quiz-mark" aria-hidden="true" hidden></span>
+      </div>
+      <fieldset id="quiz-answers" class="quiz-answers" aria-labelledby="quiz-equation">
+        <button type="button" value="1" autofocus>1</button>
+        <button type="button" value="2">2</button>
+        <button type="button" value="3">3</button>
+        <button type="button" value="4">4</button>
+        <button type="button" value="5">5</button>
+        <button type="button" value="6">6</button>
+        <button type="button" value="7">7</button>
+        <button type="button" value="8">8</button>
+        <button type="button" value="9">9</button>
+        <button type="button" value="10">10</button>
+      </fieldset>
+      <p id="quiz-feedback" class="quiz-feedback" role="status"></p>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>
