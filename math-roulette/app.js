@@ -13,7 +13,10 @@ const statusText = document.getElementById("status");
 const playbackStatus = document.getElementById("playback-status");
 const serverNote = document.getElementById("server-note");
 const rouletteStrip = document.getElementById("roulette-strip");
-const playerFrame = document.getElementById("player-frame");
+let playerFrame = document.getElementById("player-frame");
+const watchToolbar = document.getElementById("watch-toolbar");
+const watchExpand = document.getElementById("watch-expand");
+const watchClose = document.getElementById("watch-close");
 const videoPicker = document.getElementById("video-picker");
 const pickerClose = document.getElementById("picker-close");
 const videoOptions = document.getElementById("video-options");
@@ -36,6 +39,10 @@ let quizVideo = null;
 let recentQuestions = [];
 let expectedAnswer = 0;
 let quizFeedbackTimer = null;
+let youtubeApiLoading = null;
+let youtubePlayer = null;
+let nativeFullscreenRequest = null;
+let previousWatchFocus = null;
 const ROULETTE_STREAK = 3;
 const PICKED_VIDEO_STREAK = 5;
 const MAX_ADDEND = 5;
@@ -238,11 +245,101 @@ function getPlayerUrl(videoId, muted) {
   return embedUrl.toString();
 }
 
-function playSelectedVideo(videoId, muted = true) {
-  playerFrame.src = getPlayerUrl(videoId, muted);
-  if (mobileLayout.matches) {
-    playerFrame.scrollIntoView({ block: "nearest" });
+function loadYouTubeApi() {
+  if (window.YT?.Player) return Promise.resolve(window.YT);
+  if (!youtubeApiLoading) {
+    youtubeApiLoading = new Promise((resolve, reject) => {
+      window.onYouTubeIframeAPIReady = () => resolve(window.YT);
+      const script = document.createElement("script");
+      script.src = "https://www.youtube.com/iframe_api";
+      script.onerror = () => {
+        script.remove();
+        reject(new Error("YouTube player API unavailable"));
+      };
+      document.head.append(script);
+    }).catch((error) => {
+      youtubeApiLoading = null;
+      throw error;
+    });
   }
+  return youtubeApiLoading;
+}
+
+function replacePlayerFrame(src) {
+  const parent = playerFrame.parentElement;
+  const next = playerFrame.cloneNode(false);
+  next.src = src;
+  if (youtubePlayer) {
+    youtubePlayer.destroy();
+    youtubePlayer = null;
+  }
+  playerFrame.remove();
+  parent.append(next);
+  playerFrame = next;
+  return next;
+}
+
+function updateFullscreenButton() {
+  watchExpand.hidden = !document.fullscreenEnabled || Boolean(document.fullscreenElement);
+}
+
+function requestNativeFullscreen() {
+  const root = document.documentElement;
+  if (!document.fullscreenEnabled || !root.requestFullscreen ||
+      document.fullscreenElement || nativeFullscreenRequest) return;
+  const request = root.requestFullscreen();
+  nativeFullscreenRequest = request;
+  request.then(() => {
+    if (!nativeFullscreenRequest && document.fullscreenElement === root) {
+      document.exitFullscreen().catch(() => {});
+    }
+    updateFullscreenButton();
+  }, () => {
+    if (nativeFullscreenRequest === request) nativeFullscreenRequest = null;
+    updateFullscreenButton();
+  });
+}
+
+function closeWatchView() {
+  const root = document.documentElement;
+  const wasWatching = root.classList.contains("is-watching");
+  const fullscreenElement = document.fullscreenElement;
+  const ownsFullscreen = (nativeFullscreenRequest && fullscreenElement === root) ||
+    fullscreenElement === playerFrame;
+  nativeFullscreenRequest = null;
+  root.classList.remove("is-watching");
+  watchToolbar.hidden = true;
+  if (ownsFullscreen) document.exitFullscreen().catch(() => {});
+  if (wasWatching) previousWatchFocus?.focus({ preventScroll: true });
+  previousWatchFocus = null;
+}
+
+function playSelectedVideo(videoId, muted = true) {
+  const frame = replacePlayerFrame(getPlayerUrl(videoId, muted));
+  previousWatchFocus = document.activeElement === document.body
+    ? (quizVideo ? pickButton : spinButton)
+    : document.activeElement;
+  document.documentElement.classList.add("is-watching");
+  updateFullscreenButton();
+  watchToolbar.hidden = false;
+  watchClose.focus({ preventScroll: true });
+  loadYouTubeApi().then((api) => {
+    if (playerFrame !== frame) return;
+    youtubePlayer = new api.Player(frame.id, {
+      events: {
+        onStateChange(event) {
+          if (playerFrame !== frame || event.data !== api.PlayerState.ENDED) return;
+          closeWatchView();
+          playbackStatus.textContent = "영상이 끝났어요.";
+        },
+        onError() {
+          if (playerFrame !== frame) return;
+          closeWatchView();
+          playbackStatus.textContent = "영상을 재생할 수 없어요.";
+        }
+      }
+    });
+  }).catch(() => {});
 }
 
 function ensureAudioContext() {
@@ -351,7 +448,8 @@ function loadVideos(preservePlayback = false) {
   pickButton.disabled = false;
   if (!preservePlayback) {
     setWinner(null);
-    playerFrame.src = "about:blank";
+    closeWatchView();
+    replacePlayerFrame("about:blank");
     playbackStatus.textContent = "";
   }
   updateStatus(`${videos.length}개의 영상을 불러왔어요.`);
@@ -505,6 +603,7 @@ function openQuiz(video = null) {
 
   correctStreak = 0;
   quizVideo = video;
+  loadYouTubeApi().catch(() => {});
   recentQuestions = [];
   clearQuizResult();
   quizFeedback.textContent = "";
@@ -536,6 +635,7 @@ function checkQuizAnswer(button) {
     }
     if (correctStreak === requiredQuizStreak()) {
       quiz.close();
+      requestNativeFullscreen();
       if (quizVideo) {
         setWinner(quizVideo);
         playSelectedVideo(quizVideo.id, false);
@@ -653,6 +753,18 @@ async function refreshFamily() {
   }
 }
 
+watchExpand.addEventListener("click", requestNativeFullscreen);
+watchClose.addEventListener("click", closeWatchView);
+document.addEventListener("fullscreenchange", () => {
+  if (nativeFullscreenRequest && !document.fullscreenElement) closeWatchView();
+  updateFullscreenButton();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !watchToolbar.hidden) {
+    event.preventDefault();
+    closeWatchView();
+  }
+});
 loadButton.addEventListener("click", () => loadVideos());
 spinButton.addEventListener("click", () => openQuiz());
 pickButton.addEventListener("click", openVideoPicker);

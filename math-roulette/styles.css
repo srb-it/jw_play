@@ -329,11 +329,54 @@ button:not(.primary):not(.accent) {
   background: #111;
 }
 
-.player-wrap iframe {
-  display: block;
+.player-screen,
+.player-screen iframe {
   width: 100%;
   height: 100%;
+}
+
+.player-screen iframe {
+  display: block;
   border: 0;
+}
+
+.is-watching {
+  overflow: hidden;
+}
+
+.is-watching :is(.hero, .controls, .stage, .player-head) {
+  visibility: hidden;
+}
+
+.is-watching .player-panel {
+  backdrop-filter: none;
+}
+
+.is-watching .player-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  aspect-ratio: auto;
+  padding-bottom: env(safe-area-inset-bottom);
+  border-radius: 0;
+  background: #000;
+}
+
+.watch-toolbar:not([hidden]) {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: max(6px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) 6px 8px;
+}
+
+.watch-toolbar button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 8px;
+  font-size: 1.5rem;
 }
 
 .stage {
