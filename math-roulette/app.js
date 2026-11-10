@@ -14,6 +14,7 @@ const playbackStatus = document.getElementById("playback-status");
 const serverNote = document.getElementById("server-note");
 const rouletteStrip = document.getElementById("roulette-strip");
 let playerFrame = document.getElementById("player-frame");
+const playerWrap = playerFrame.closest(".player-wrap");
 const watchToolbar = document.getElementById("watch-toolbar");
 const watchExpand = document.getElementById("watch-expand");
 const watchClose = document.getElementById("watch-close");
@@ -284,13 +285,13 @@ function updateFullscreenButton() {
 }
 
 function requestNativeFullscreen() {
-  const root = document.documentElement;
-  if (!document.fullscreenEnabled || !root.requestFullscreen ||
-      document.fullscreenElement || nativeFullscreenRequest) return;
-  const request = root.requestFullscreen();
+  if (watchToolbar.hidden || !document.fullscreenEnabled || !playerWrap.requestFullscreen ||
+      document.fullscreenElement || nativeFullscreenRequest ||
+      navigator.userActivation?.isActive === false) return;
+  const request = playerWrap.requestFullscreen();
   nativeFullscreenRequest = request;
   request.then(() => {
-    if (!nativeFullscreenRequest && document.fullscreenElement === root) {
+    if (!nativeFullscreenRequest && document.fullscreenElement === playerWrap) {
       document.exitFullscreen().catch(() => {});
     }
     updateFullscreenButton();
@@ -304,7 +305,7 @@ function closeWatchView() {
   const root = document.documentElement;
   const wasWatching = root.classList.contains("is-watching");
   const fullscreenElement = document.fullscreenElement;
-  const ownsFullscreen = (nativeFullscreenRequest && fullscreenElement === root) ||
+  const ownsFullscreen = (nativeFullscreenRequest && fullscreenElement === playerWrap) ||
     fullscreenElement === playerFrame;
   nativeFullscreenRequest = null;
   root.classList.remove("is-watching");
@@ -323,6 +324,7 @@ function playSelectedVideo(videoId, muted = true) {
   updateFullscreenButton();
   watchToolbar.hidden = false;
   watchClose.focus({ preventScroll: true });
+  requestNativeFullscreen();
   loadYouTubeApi().then((api) => {
     if (playerFrame !== frame) return;
     youtubePlayer = new api.Player(frame.id, {
@@ -635,7 +637,6 @@ function checkQuizAnswer(button) {
     }
     if (correctStreak === requiredQuizStreak()) {
       quiz.close();
-      requestNativeFullscreen();
       if (quizVideo) {
         setWinner(quizVideo);
         playSelectedVideo(quizVideo.id, false);
