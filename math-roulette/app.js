@@ -48,8 +48,8 @@ const ROULETTE_STREAK = 5;
 const PICKED_VIDEO_STREAK = 10;
 const MAX_ADDEND = 5;
 const QUIZ_FEEDBACK_DURATION = 1000;
-const QUIZ_MALLET_GAIN = 2.7;
-const SPIN_TICK_GAIN = 9;
+const QUIZ_MALLET_GAIN = 3;
+const SPIN_TICK_GAIN = 15;
 const ADDITION_QUESTIONS = Array.from({ length: MAX_ADDEND }, (_, index) =>
   Array.from({ length: index + 1 }, (_, other) => [index + 1, other + 1])
 ).flat();
