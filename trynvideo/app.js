@@ -590,6 +590,25 @@ function playQuizResultSound(correct) {
   sound.play().catch(() => {});
 }
 
+function finishAfterCorrectSound() {
+  const sound = quizSounds[1];
+  const finish = () => {
+    sound.removeEventListener("ended", finish);
+    if (!quiz.open || quizFeedbackTimer !== timeout) return;
+    clearQuizResult();
+    finishChallenge();
+  };
+  // Keep the quiz moving if the browser cannot play the chime.
+  const timeout = window.setTimeout(() => {
+    sound.pause();
+    finish();
+  }, 2000);
+  quizFeedbackTimer = timeout;
+  sound.addEventListener("ended", finish, { once: true });
+  sound.currentTime = 0;
+  sound.play().catch(finish);
+}
+
 function buildQuestions(settings) {
   if (settings.operation === "multiplication" && settings.timesTable) {
     return Array.from({ length: 9 }, (_, index) => [Number(settings.table), index + 1]);
@@ -781,8 +800,12 @@ function gradeQuizAnswer(button, correct) {
   quizAnswers.disabled = true;
 
   if (correctStreak === requiredQuizStreak()) {
-    playQuizResultSound(correct);
-    finishChallenge();
+    if (quizVideo) {
+      playQuizResultSound(correct);
+      finishChallenge();
+    } else {
+      finishAfterCorrectSound();
+    }
     return;
   }
 
