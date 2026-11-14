@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Happy Family, 공부하고 놀기 | 정상부녀</title>
-    <link rel="stylesheet" href="styles.css?v=course-back-2" />
+    <link rel="stylesheet" href="styles.css?v=phonics-1" />
   </head>
   <body>
     <main class="app">
@@ -12,7 +12,7 @@
         <div>
           <p class="brand-name">정상부녀</p>
           <h1>Happy Family, <span>공부하고 놀기</span></h1>
-          <p class="hero-guide">선택한 과목의 문제를 룰렛은 연속 5번, 고른 영상은 연속 10번 맞춰야 재생돼요</p>
+          <p class="hero-guide" id="study-guide">선택한 과목의 문제를 룰렛은 연속 5번, 고른 영상은 연속 10번 맞춰야 재생돼요</p>
         </div>
       </section>
 
@@ -131,6 +131,26 @@
         <button id="math-course" type="button">수학</button>
         <button type="button" disabled>과학 <small>(준비중)</small></button>
       </div>
+      <form id="english-settings" hidden>
+        <fieldset class="subject-options">
+          <legend>Smart Phonics</legend>
+          <div class="subject-buttons phonics-sets">
+            <label><input type="radio" name="set" value="long" checked /><span>Long Vowels</span></label>
+            <label><input type="radio" name="set" value="mixed" /><span>Short + Long Vowels</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="subject-options">
+          <legend>모음</legend>
+          <div class="subject-buttons phonics-vowels">
+            <label><input type="radio" name="vowel" value="all" checked /><span>전체</span></label>
+            <label><input type="radio" name="vowel" value="a" /><span>A</span></label>
+            <label><input type="radio" name="vowel" value="i" /><span>I</span></label>
+            <label><input type="radio" name="vowel" value="o" /><span>O</span></label>
+            <label><input type="radio" name="vowel" value="u" /><span>U</span></label>
+          </div>
+        </fieldset>
+        <div class="actions"><button type="submit" class="accent">적용</button></div>
+      </form>
     </dialog>
 
     <dialog id="subject-dialog" class="settings-dialog" aria-labelledby="subject-title">
@@ -196,9 +216,11 @@
         <span id="quiz-mark" class="quiz-mark" aria-hidden="true" hidden></span>
       </div>
       <fieldset id="quiz-answers" class="quiz-answers" aria-labelledby="quiz-equation"></fieldset>
+      <div id="phonics-actions" class="actions" hidden><button id="phonics-next" type="button" class="accent" lang="en">Next</button></div>
       <p id="quiz-feedback" class="quiz-feedback" role="status"></p>
     </dialog>
 
-    <script src="app.js?v=course-back-1"></script>
+    <script src="phonics.js?v=1"></script>
+    <script src="app.js?v=phonics-1"></script>
   </body>
 </html>

@@ -40,6 +40,32 @@ let youtubePlayer = null;
 const ROULETTE_STREAK = 5;
 const PICKED_VIDEO_STREAK = 10;
 const SUBJECT_KEY = "math-roulette-subject";
+const ENGLISH_KEY = "trynvideo-english";
+const COURSE_KEY = "trynvideo-course";
+const studyGuide = document.getElementById("study-guide");
+const mathGuide = studyGuide.textContent;
+const phonicsActions = document.getElementById("phonics-actions");
+const phonicsNext = document.getElementById("phonics-next");
+let activeCourse = "math";
+let phonicsSettings = { set: "long", vowel: "all" };
+let phonicsDeck = [];
+try {
+  const saved = JSON.parse(localStorage.getItem(ENGLISH_KEY));
+  if (Object.hasOwn(phonicsSets, saved?.set) && /^(all|a|i|o|u)$/.test(saved.vowel)) {
+    phonicsSettings = saved;
+  }
+  if (localStorage.getItem(COURSE_KEY) === "english") activeCourse = "english";
+} catch {}
+
+function selectCourse(course) {
+  activeCourse = course;
+  studyGuide.textContent = course === "english"
+    ? "영어 단어를 읽고 Next를 룰렛은 5번, 고른 영상은 10번 누르면 재생돼요"
+    : mathGuide;
+  try { localStorage.setItem(COURSE_KEY, course); } catch {}
+}
+
+if (activeCourse === "english") selectCourse("english");
 const subjectDialog = document.getElementById("subject-dialog");
 const subjectForm = document.getElementById("subject-form");
 const subjectFields = subjectForm.elements;
@@ -618,6 +644,30 @@ function renderAnswerButtons(values) {
   }));
 }
 
+function showPhonicsCard() {
+  if (!phonicsDeck.length) phonicsDeck = buildPhonicsDeck(phonicsSettings.set, phonicsSettings.vowel);
+  quizProgress.textContent = `읽은 카드 ${correctStreak} / ${requiredQuizStreak()}`;
+  quizEquation.textContent = phonicsDeck.shift().join(" / ");
+}
+
+function finishChallenge() {
+  quiz.close();
+  if (quizVideo) {
+    setWinner(quizVideo);
+    playSelectedVideo(quizVideo.id, false);
+    playbackStatus.textContent = `${quizVideo.title} 재생!`;
+  } else {
+    spinRoulette();
+  }
+}
+
+phonicsNext.addEventListener("click", () => {
+  if (!quiz.open || phonicsActions.hidden) return;
+  correctStreak += 1;
+  if (correctStreak === requiredQuizStreak()) finishChallenge();
+  else showPhonicsCard();
+});
+
 function openQuiz(video = null) {
   if (spinning || quiz.open || (video ? pickButton.disabled : spinButton.disabled)) {
     return;
@@ -626,12 +676,25 @@ function openQuiz(video = null) {
   correctStreak = 0;
   quizVideo = video;
   loadYouTubeApi().catch(() => {});
+  clearQuizResult();
+  quizFeedback.textContent = "";
+  const english = activeCourse === "english";
+  phonicsActions.hidden = !english;
+  quizAnswers.hidden = english;
+  if (english) {
+    document.getElementById("quiz-title").textContent = "Smart Phonics";
+    quizEquation.lang = "en";
+    phonicsDeck = [];
+    showPhonicsCard();
+    quiz.showModal();
+    phonicsNext.focus();
+    return;
+  }
+  quizEquation.removeAttribute("lang");
   recentQuestions = [];
   quizQuestions = buildQuestions(subject);
   const operation = operations[subject.operation];
   document.getElementById("quiz-title").textContent = `${operation.title} 퀴즈`;
-  clearQuizResult();
-  quizFeedback.textContent = "";
   updateQuizProgress();
   showNextQuestion();
   quiz.showModal();
@@ -660,14 +723,7 @@ function checkQuizAnswer(button) {
       return;
     }
     if (correctStreak === requiredQuizStreak()) {
-      quiz.close();
-      if (quizVideo) {
-        setWinner(quizVideo);
-        playSelectedVideo(quizVideo.id, false);
-        playbackStatus.textContent = `${quizVideo.title} 재생!`;
-      } else {
-        spinRoulette();
-      }
+      finishChallenge();
     } else if (correct) {
       showNextQuestion();
       quizAnswers.firstElementChild.focus();
@@ -807,11 +863,13 @@ const courseGrid = document.getElementById("course-grid");
 const englishCourse = document.getElementById("english-course");
 const mathCourse = document.getElementById("math-course");
 const courseBack = document.getElementById("course-back");
+const englishSettings = document.getElementById("english-settings");
 
 function showCoursePicker() {
   courseTitle.textContent = "공부 과목 선택";
   courseGrid.hidden = false;
   courseBack.hidden = true;
+  englishSettings.hidden = true;
 }
 
 document.getElementById("subject-button").addEventListener("click", () => {
@@ -822,7 +880,17 @@ englishCourse.addEventListener("click", () => {
   courseTitle.textContent = "영어";
   courseGrid.hidden = true;
   courseBack.hidden = false;
+  englishSettings.elements.set.value = phonicsSettings.set;
+  englishSettings.elements.vowel.value = phonicsSettings.vowel;
+  englishSettings.hidden = false;
   courseBack.focus();
+});
+englishSettings.addEventListener("submit", (event) => {
+  event.preventDefault();
+  phonicsSettings = { set: englishSettings.elements.set.value, vowel: englishSettings.elements.vowel.value };
+  try { localStorage.setItem(ENGLISH_KEY, JSON.stringify(phonicsSettings)); } catch {}
+  selectCourse("english");
+  courseDialog.close();
 });
 courseBack.addEventListener("click", () => {
   showCoursePicker();
@@ -845,6 +913,7 @@ document.getElementById("subject-close").addEventListener("click", () => subject
 subjectForm.addEventListener("change", showSubjectOptions);
 subjectDialog.addEventListener("close", () => {
   if (subjectDialog.returnValue !== "save") return;
+  selectCourse("math");
   subject.operation = subjectFields.operation.value;
   for (const key of Object.keys(defaultSubject)) {
     if (typeof defaultSubject[key] === "boolean") subject[key] = subjectFields[key].checked;

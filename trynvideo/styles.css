@@ -110,6 +110,33 @@ body {
   gap: 6px;
 }
 
+.phonics-sets {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.phonics-sets span {
+  padding: 4px;
+  text-align: center;
+}
+
+.phonics-vowels {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+#phonics-actions {
+  justify-content: center;
+}
+
+#phonics-actions[hidden],
+#quiz-answers[hidden] {
+  display: none;
+}
+
+#quiz-equation[lang="en"] {
+  white-space: normal;
+  text-align: center;
+}
+
 .subject-buttons label {
   position: relative;
   cursor: pointer;
