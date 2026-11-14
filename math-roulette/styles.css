@@ -336,7 +336,8 @@ button:not(.primary):not(.accent) {
   color: var(--text);
 }
 
-#pick-button {
+#pick-button,
+#family-connect {
   background: #255dab;
   color: #fff;
 }
