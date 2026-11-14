@@ -333,13 +333,18 @@ function replacePlayerFrame(src) {
 
 function playSelectedVideo(videoId) {
   const frame = replacePlayerFrame(getPlayerUrl(videoId));
+  let showedPlaybackHint = false;
   loadYouTubeApi().then((api) => {
     if (playerFrame !== frame) return;
     youtubePlayer = new api.Player(frame.id, {
       events: {
         onAutoplayBlocked() {
-          if (playerFrame !== frame) return;
-          playbackStatus.textContent = "자동재생이 차단됐어요. 영상의 재생 버튼을 눌러 주세요.";
+          if (playerFrame !== frame || showedPlaybackHint) return;
+          showedPlaybackHint = true;
+          playbackStatus.textContent = "영상의 ▶ 버튼을 누르면 소리와 함께 재생돼요.";
+          if (window.matchMedia("(pointer: coarse)").matches) {
+            frame.scrollIntoView({ block: "center" });
+          }
         },
         onStateChange(event) {
           if (playerFrame !== frame) return;
