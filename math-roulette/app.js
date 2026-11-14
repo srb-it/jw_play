@@ -706,8 +706,8 @@ async function changeFamily(action) {
     familyStatus.textContent = "가족 코드를 다시 확인해 주세요.";
     return;
   }
-  if (videoIds && (videoIds.length < 2 || videoIds.length > 50 || videoIds.some((id) => !id))) {
-    familyStatus.textContent = "유튜브 링크를 한 줄에 하나씩 2~50개 넣어 주세요.";
+  if (videoIds && (videoIds.length < 1 || videoIds.length > 50 || videoIds.some((id) => !id))) {
+    familyStatus.textContent = "유튜브 링크를 한 줄에 하나씩 1~50개 넣어 주세요.";
     if (action === "save") updateStatus(familyStatus.textContent);
     return;
   }
