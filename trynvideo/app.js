@@ -801,7 +801,35 @@ function fillSubjectForm(settings) {
   showSubjectOptions();
 }
 
+const courseDialog = document.getElementById("course-dialog");
+const courseTitle = document.getElementById("course-title");
+const courseGrid = document.getElementById("course-grid");
+const englishCoursePanel = document.getElementById("english-course-panel");
+const englishCourse = document.getElementById("english-course");
+const courseBack = document.getElementById("course-back");
+
+function showCoursePicker() {
+  courseTitle.textContent = "공부 과목 선택";
+  courseGrid.hidden = false;
+  englishCoursePanel.hidden = true;
+}
+
 document.getElementById("subject-button").addEventListener("click", () => {
+  showCoursePicker();
+  courseDialog.showModal();
+});
+englishCourse.addEventListener("click", () => {
+  courseTitle.textContent = "영어";
+  courseGrid.hidden = true;
+  englishCoursePanel.hidden = false;
+  courseBack.focus();
+});
+courseBack.addEventListener("click", () => {
+  showCoursePicker();
+  englishCourse.focus();
+});
+document.getElementById("math-course").addEventListener("click", () => {
+  courseDialog.close();
   subjectDialog.returnValue = "";
   fillSubjectForm(subject);
   subjectDialog.showModal();

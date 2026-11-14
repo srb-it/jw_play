@@ -117,14 +117,30 @@
       <div id="video-options" class="video-options"></div>
     </dialog>
 
+    <dialog id="course-dialog" class="settings-dialog" aria-labelledby="course-title">
+      <header class="quiz-header">
+        <h2 id="course-title">공부 과목 선택</h2>
+        <form method="dialog"><button type="submit" aria-label="닫기">&times;</button></form>
+      </header>
+      <div id="course-grid" class="course-grid">
+        <button type="button" disabled>국어 <small>(준비중)</small></button>
+        <button id="english-course" type="button">영어</button>
+        <button id="math-course" type="button">수학</button>
+        <button type="button" disabled>과학 <small>(준비중)</small></button>
+      </div>
+      <div id="english-course-panel" class="actions" hidden>
+        <button id="course-back" type="button">과목 선택으로</button>
+      </div>
+    </dialog>
+
     <dialog id="subject-dialog" class="settings-dialog" aria-labelledby="subject-title">
       <form method="dialog" id="subject-form">
         <header class="quiz-header">
-          <h2 id="subject-title">공부 과목 선택</h2>
+          <h2 id="subject-title">수학</h2>
           <button id="subject-reset" type="button">초기화</button>
         </header>
         <fieldset class="subject-options subject-picker">
-          <legend>과목</legend>
+          <legend>연산</legend>
           <div class="subject-buttons">
             <label><input type="radio" name="operation" value="addition" checked /><span>덧셈</span></label>
             <label><input type="radio" name="operation" value="subtraction" /><span>뺄셈</span></label>
@@ -178,6 +194,6 @@
       <p id="quiz-feedback" class="quiz-feedback" role="status"></p>
     </dialog>
 
-    <script src="app.js?v=subject-reset-1"></script>
+    <script src="app.js?v=course-picker-1"></script>
   </body>
 </html>
