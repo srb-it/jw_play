@@ -21,7 +21,8 @@ function phonicsGroups(vowel) {
 function buildPhonicsDeck(set, vowel, pattern = "", target = 10) {
   if (set === "long") {
     const groups = phonicsGroups(vowel);
-    const start = Math.max(0, groups.findIndex(([ending]) => ending === pattern));
+    const selected = groups.findIndex(([ending]) => ending === pattern);
+    const start = selected < 0 ? Math.floor(Math.random() * groups.length) : selected;
     const ordered = [...groups.slice(start), ...groups.slice(0, start)];
     let entries = ordered.map(([, words]) => words).join(" ").split(" ");
     if (entries.length < target) {

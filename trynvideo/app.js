@@ -874,7 +874,7 @@ function renderPhonicsPatterns(selected) {
   const isLong = englishSettings.elements.set.value === "long";
   phonicsPatternOptions.hidden = !isLong;
   const groups = isLong ? phonicsGroups(englishSettings.elements.vowel.value) : [];
-  phonicsPattern.replaceChildren(new Option("처음부터", ""), ...groups.map(([ending]) => new Option(`-${ending}`, ending)));
+  phonicsPattern.replaceChildren(new Option("무작위로 시작", ""), ...groups.map(([ending]) => new Option(`-${ending}`, ending)));
   phonicsPattern.value = groups.some(([ending]) => ending === selected) ? selected : "";
 }
 
