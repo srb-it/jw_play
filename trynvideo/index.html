@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Happy Family, 공부하고 놀기 | 정상부녀</title>
-    <link rel="stylesheet" href="styles.css?v=compact-close-1" />
+    <link rel="stylesheet" href="styles.css?v=course-back-1" />
   </head>
   <body>
     <main class="app">
@@ -119,7 +119,10 @@
 
     <dialog id="course-dialog" class="settings-dialog" aria-labelledby="course-title">
       <header class="quiz-header">
-        <h2 id="course-title">공부 과목 선택</h2>
+        <div class="course-heading">
+          <button id="course-back" class="course-back" type="button" aria-label="과목 선택으로 돌아가기" title="과목 선택으로 돌아가기" hidden>&larr;</button>
+          <h2 id="course-title">공부 과목 선택</h2>
+        </div>
         <form method="dialog"><button type="submit" aria-label="닫기">&times;</button></form>
       </header>
       <div id="course-grid" class="course-grid">
@@ -128,15 +131,15 @@
         <button id="math-course" type="button">수학</button>
         <button type="button" disabled>과학 <small>(준비중)</small></button>
       </div>
-      <div id="english-course-panel" class="actions" hidden>
-        <button id="course-back" type="button">과목 선택으로</button>
-      </div>
     </dialog>
 
     <dialog id="subject-dialog" class="settings-dialog" aria-labelledby="subject-title">
       <form method="dialog" id="subject-form">
         <header class="quiz-header">
-          <h2 id="subject-title">수학</h2>
+          <div class="course-heading">
+            <button id="math-back" class="course-back" type="button" aria-label="과목 선택으로 돌아가기" title="과목 선택으로 돌아가기">&larr;</button>
+            <h2 id="subject-title">수학</h2>
+          </div>
           <div class="subject-header-actions">
             <button id="subject-reset" type="button">초기화</button>
             <button id="subject-close" type="button" aria-label="수학 설정 닫기">&times;</button>
@@ -196,6 +199,6 @@
       <p id="quiz-feedback" class="quiz-feedback" role="status"></p>
     </dialog>
 
-    <script src="app.js?v=subject-close-1"></script>
+    <script src="app.js?v=course-back-1"></script>
   </body>
 </html>

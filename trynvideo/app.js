@@ -804,14 +804,14 @@ function fillSubjectForm(settings) {
 const courseDialog = document.getElementById("course-dialog");
 const courseTitle = document.getElementById("course-title");
 const courseGrid = document.getElementById("course-grid");
-const englishCoursePanel = document.getElementById("english-course-panel");
 const englishCourse = document.getElementById("english-course");
+const mathCourse = document.getElementById("math-course");
 const courseBack = document.getElementById("course-back");
 
 function showCoursePicker() {
   courseTitle.textContent = "공부 과목 선택";
   courseGrid.hidden = false;
-  englishCoursePanel.hidden = true;
+  courseBack.hidden = true;
 }
 
 document.getElementById("subject-button").addEventListener("click", () => {
@@ -821,18 +821,24 @@ document.getElementById("subject-button").addEventListener("click", () => {
 englishCourse.addEventListener("click", () => {
   courseTitle.textContent = "영어";
   courseGrid.hidden = true;
-  englishCoursePanel.hidden = false;
+  courseBack.hidden = false;
   courseBack.focus();
 });
 courseBack.addEventListener("click", () => {
   showCoursePicker();
   englishCourse.focus();
 });
-document.getElementById("math-course").addEventListener("click", () => {
+mathCourse.addEventListener("click", () => {
   courseDialog.close();
   subjectDialog.returnValue = "";
   fillSubjectForm(subject);
   subjectDialog.showModal();
+});
+document.getElementById("math-back").addEventListener("click", () => {
+  subjectDialog.close("cancel");
+  showCoursePicker();
+  courseDialog.showModal();
+  mathCourse.focus();
 });
 document.getElementById("subject-reset").addEventListener("click", () => fillSubjectForm(defaultSubject));
 document.getElementById("subject-close").addEventListener("click", () => subjectDialog.close("cancel"));

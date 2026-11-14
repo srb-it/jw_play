@@ -588,8 +588,18 @@ button:not(.primary):not(.accent) {
   color: #fff;
 }
 
-#english-course-panel[hidden] {
-  display: none;
+.course-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.course-heading .course-back {
+  flex: none;
+  width: 44px;
+  padding: 0;
+  border: 1px solid var(--button-outline);
+  font-size: 1.25rem;
 }
 
 .subject-header-actions {
