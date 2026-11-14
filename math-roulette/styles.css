@@ -630,6 +630,7 @@ button:not(.primary):not(.accent) {
 }
 
 #register-dialog[open] {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   max-height: calc(100dvh - 24px);
@@ -638,7 +639,9 @@ button:not(.primary):not(.accent) {
 
 #registered-videos {
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-auto-rows: max-content;
+  --registration-row: calc((100cqw - 16px) * 0.1875 + 32px);
+  grid-auto-rows: var(--registration-row);
+  max-height: calc(3 * var(--registration-row) + 16px);
   gap: 8px;
   min-height: 0;
   overflow-y: auto;
@@ -665,44 +668,56 @@ button:not(.primary):not(.accent) {
 
 .registered-video {
   position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 32px;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
 }
 
+.registered-video img {
+  height: 100%;
+  aspect-ratio: auto;
+}
+
 .registered-video span {
+  grid-row: 2;
   display: block;
+  padding-block: 5px;
   font-size: .875rem;
 }
 
 #registered-videos .video-remove {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 2px;
+  right: 2px;
   display: grid;
-  place-items: start end;
+  place-items: center;
   width: 32px;
   height: 32px;
-  padding: 3px 3px 0 0;
+  padding: 0 6px 6px 0;
   border-radius: 6px;
   background: transparent;
-  color: transparent;
+  color: #81252b;
+  font-size: 1rem;
+  line-height: 20px;
+  isolation: isolate;
 }
 
-#registered-videos .video-remove::after {
-  content: "\\00d7";
-  grid-area: 1 / 1;
+#registered-videos .video-remove::before {
+  content: "";
+  z-index: -1;
   position: absolute;
   top: 3px;
   right: 3px;
-  display: grid;
-  place-items: center;
   width: 20px;
   height: 20px;
   border-radius: 50%;
   background: #fff;
-  color: #81252b;
-  font-size: 1rem;
+}
+
+#registered-videos .video-remove:hover {
+  transform: none;
 }
 
 #video-add-form {
