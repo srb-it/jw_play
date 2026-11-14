@@ -348,7 +348,6 @@ button:not(.primary):not(.accent) {
   color: #fff;
 }
 
-#load-button,
 #save-button {
   border: 1px solid var(--line);
   background: #fff;

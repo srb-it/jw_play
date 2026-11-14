@@ -1,5 +1,5 @@
 const urlsTextarea = document.getElementById("video-urls");
-const loadButton = document.getElementById("load-button");
+const registerButton = document.getElementById("register-button");
 const spinButton = document.getElementById("spin-button");
 const pickButton = document.getElementById("pick-button");
 const saveButton = document.getElementById("save-button");
@@ -157,7 +157,8 @@ function saveUrlsToStorage() {
   }
 
   window.localStorage.setItem(SAVED_URLS_KEY, rawText);
-  updateStatus("링크를 저장했어요. 다음에 다시 열어도 자동으로 불러옵니다.");
+  loadVideos(true);
+  updateStatus("저장했어요. 룰렛에 바로 반영됐어요.");
 }
 
 function restoreSavedUrls() {
@@ -169,7 +170,6 @@ function restoreSavedUrls() {
   }
 
   urlsTextarea.value = savedUrls;
-  updateStatus("저장된 링크를 불러왔어요. 링크 불러오기를 누르거나 바로 수정해도 됩니다.");
 }
 
 function redirectToLocalServer() {
@@ -454,7 +454,7 @@ function spinRoulette() {
   spinning = true;
   spinButton.disabled = true;
   pickButton.disabled = true;
-  loadButton.disabled = true;
+  registerButton.disabled = true;
   playbackStatus.textContent = "룰렛이 돌아가는 중...";
   startSpinMusic();
 
@@ -485,7 +485,7 @@ function spinRoulette() {
     spinning = false;
     spinButton.disabled = false;
     pickButton.disabled = false;
-    loadButton.disabled = false;
+    registerButton.disabled = false;
   }, 4600);
 }
 
@@ -752,7 +752,6 @@ async function refreshFamily() {
   }
 }
 
-loadButton.addEventListener("click", () => loadVideos());
 spinButton.addEventListener("click", () => openQuiz());
 pickButton.addEventListener("click", openVideoPicker);
 pickerClose.addEventListener("click", () => videoPicker.close());
@@ -898,12 +897,18 @@ videoAddForm.addEventListener("submit", (event) => {
   registerStatus.textContent = "영상을 추가했어요. 저장하기를 누르면 저장돼요.";
 });
 document.getElementById("cancel-video-add").addEventListener("click", closeVideoAdd);
-document.getElementById("register-button").addEventListener("click", () => {
+registerButton.addEventListener("click", () => {
   videoAddForm.reset();
   videoAddForm.hidden = true;
   renderRegisteredVideos();
   registerStatus.textContent = "";
   registerDialog.showModal();
+});
+registerDialog.addEventListener("close", () => {
+  if (familyBusy) return;
+  if (family) urlsTextarea.value = family.urls;
+  else restoreSavedUrls();
+  refreshFamily();
 });
 document.getElementById("sync-button").addEventListener("click", () => {
   document.getElementById("sync-dialog").showModal();
