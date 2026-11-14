@@ -337,8 +337,14 @@ button:not(.primary):not(.accent) {
 }
 
 #pick-button,
-#family-connect {
+#family-connect,
+#family-copy {
   background: #255dab;
+  color: #fff;
+}
+
+#family-disconnect {
+  background: #a52632;
   color: #fff;
 }
 
