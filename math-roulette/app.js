@@ -74,7 +74,7 @@ const DEFAULT_VIDEO_URLS = [
 ].join("\n");
 const FAMILY_API = "https://happy-family-roulette-sync.cloudygerbil.chatgpt.site/api/lists";
 const FAMILY_STORAGE_KEY = "math-roulette-family";
-const FAMILY_CODE_PATTERN = /^[a-f0-9]{32}$/;
+const FAMILY_CODE_PATTERN = /^(?:[a-f0-9]{32}|[a-z0-9]{4})$/i;
 const familyJoin = document.getElementById("family-join");
 const familyConnected = document.getElementById("family-connected");
 const familyCodeInput = document.getElementById("family-code");
@@ -674,7 +674,7 @@ async function requestFamily(action, code, videoIds) {
   const response = await fetch(FAMILY_API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action, code, videoIds }),
+    body: JSON.stringify({ action, code, videoIds, codeFormat: action === "create" ? "short" : undefined }),
     signal: AbortSignal.timeout(8000)
   });
   if (response.status === 404) {
