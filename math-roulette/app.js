@@ -931,7 +931,7 @@ function renderRegisteredVideos() {
       renderRegisteredVideos();
       registeredVideos.querySelectorAll(".video-remove")[index]?.focus();
       if (!registeredVideos.contains(document.activeElement)) registeredVideos.firstElementChild.focus();
-      registerStatus.textContent = "영상이 목록에서 빠졌어요. 링크 저장하기를 누르면 저장돼요.";
+      registerStatus.textContent = "영상이 목록에서 빠졌어요. 저장하기를 누르면 저장돼요.";
     });
     card.append(title, remove);
     registeredVideos.append(card);
@@ -960,7 +960,7 @@ videoAddForm.addEventListener("submit", (event) => {
   urlsTextarea.value = [...urls, `https://youtu.be/${id}`].join("\n");
   renderRegisteredVideos();
   closeVideoAdd();
-  registerStatus.textContent = "영상을 추가했어요. 링크 저장하기를 누르면 저장돼요.";
+  registerStatus.textContent = "영상을 추가했어요. 저장하기를 누르면 저장돼요.";
 });
 document.getElementById("cancel-video-add").addEventListener("click", closeVideoAdd);
 document.getElementById("register-button").addEventListener("click", () => {

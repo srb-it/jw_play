@@ -33,7 +33,10 @@
 
         <dialog id="register-dialog" class="settings-dialog" aria-labelledby="register-title">
           <header class="quiz-header">
-            <h2 id="register-title">영상 등록하기</h2>
+            <div class="register-heading">
+              <h2 id="register-title">영상 등록하기</h2>
+              <button id="save-button" type="button">저장하기</button>
+            </div>
             <form method="dialog"><button type="submit" aria-label="닫기">&times;</button></form>
           </header>
           <input id="video-urls" type="hidden" />
@@ -43,7 +46,6 @@
             <div class="actions"><button type="submit" class="accent">추가</button><button id="cancel-video-add" type="button">취소</button></div>
           </form>
           <div id="registered-videos" class="video-options"></div>
-          <div class="actions"><button id="save-button" type="button">링크 저장하기</button></div>
 
           <p id="register-status" class="status" role="status"></p>
         </dialog>

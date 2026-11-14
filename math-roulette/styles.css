@@ -637,6 +637,13 @@ button:not(.primary):not(.accent) {
   padding: 12px;
 }
 
+.register-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
 #registered-videos {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   --registration-row: calc((100cqw - 16px) * 0.1875 + 32px);
