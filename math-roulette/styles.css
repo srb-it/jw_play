@@ -30,7 +30,7 @@ body {
 }
 
 .app {
-  width: min(1180px, calc(100vw - 28px));
+  width: min(960px, calc(100% - 28px));
   margin: 0 auto;
   padding: 14px 0 18px;
 }
@@ -103,11 +103,6 @@ body {
 
 .settings-dialog .quiz-header {
   margin-bottom: 12px;
-}
-
-.player-panel {
-  width: min(100%, 960px);
-  justify-self: center;
 }
 
 .link-input-head {
