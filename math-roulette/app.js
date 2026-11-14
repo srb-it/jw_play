@@ -14,10 +14,6 @@ const playbackStatus = document.getElementById("playback-status");
 const serverNote = document.getElementById("server-note");
 const rouletteStrip = document.getElementById("roulette-strip");
 let playerFrame = document.getElementById("player-frame");
-const playerWrap = playerFrame.closest(".player-wrap");
-const watchToolbar = document.getElementById("watch-toolbar");
-const watchExpand = document.getElementById("watch-expand");
-const watchClose = document.getElementById("watch-close");
 const videoPicker = document.getElementById("video-picker");
 const pickerClose = document.getElementById("picker-close");
 const videoOptions = document.getElementById("video-options");
@@ -42,8 +38,6 @@ let expectedAnswer = 0;
 let quizFeedbackTimer = null;
 let youtubeApiLoading = null;
 let youtubePlayer = null;
-let nativeFullscreenRequest = null;
-let previousWatchFocus = null;
 const ROULETTE_STREAK = 5;
 const PICKED_VIDEO_STREAK = 10;
 const SUBJECT_KEY = "math-roulette-subject";
@@ -300,63 +294,19 @@ function replacePlayerFrame(src) {
   return next;
 }
 
-function updateFullscreenButton() {
-  watchExpand.hidden = !document.fullscreenEnabled || Boolean(document.fullscreenElement);
-}
-
-function requestNativeFullscreen() {
-  if (watchToolbar.hidden || !document.fullscreenEnabled || !playerWrap.requestFullscreen ||
-      document.fullscreenElement || nativeFullscreenRequest ||
-      navigator.userActivation?.isActive === false) return;
-  const request = playerWrap.requestFullscreen();
-  nativeFullscreenRequest = request;
-  request.then(() => {
-    if (!nativeFullscreenRequest && document.fullscreenElement === playerWrap) {
-      document.exitFullscreen().catch(() => {});
-    }
-    updateFullscreenButton();
-  }, () => {
-    if (nativeFullscreenRequest === request) nativeFullscreenRequest = null;
-    updateFullscreenButton();
-  });
-}
-
-function closeWatchView() {
-  const root = document.documentElement;
-  const wasWatching = root.classList.contains("is-watching");
-  const fullscreenElement = document.fullscreenElement;
-  const ownsFullscreen = (nativeFullscreenRequest && fullscreenElement === playerWrap) ||
-    fullscreenElement === playerFrame;
-  nativeFullscreenRequest = null;
-  root.classList.remove("is-watching");
-  watchToolbar.hidden = true;
-  if (ownsFullscreen) document.exitFullscreen().catch(() => {});
-  if (wasWatching) previousWatchFocus?.focus({ preventScroll: true });
-  previousWatchFocus = null;
-}
 
 function playSelectedVideo(videoId, muted = true) {
   const frame = replacePlayerFrame(getPlayerUrl(videoId, muted));
-  previousWatchFocus = document.activeElement === document.body
-    ? (quizVideo ? pickButton : spinButton)
-    : document.activeElement;
-  document.documentElement.classList.add("is-watching");
-  updateFullscreenButton();
-  watchToolbar.hidden = false;
-  watchClose.focus({ preventScroll: true });
-  requestNativeFullscreen();
   loadYouTubeApi().then((api) => {
     if (playerFrame !== frame) return;
     youtubePlayer = new api.Player(frame.id, {
       events: {
         onStateChange(event) {
           if (playerFrame !== frame || event.data !== api.PlayerState.ENDED) return;
-          closeWatchView();
           playbackStatus.textContent = "영상이 끝났어요.";
         },
         onError() {
           if (playerFrame !== frame) return;
-          closeWatchView();
           playbackStatus.textContent = "영상을 재생할 수 없어요.";
         }
       }
@@ -473,7 +423,6 @@ function loadVideos(preservePlayback = false) {
   pickButton.disabled = false;
   if (!preservePlayback) {
     setWinner(null);
-    closeWatchView();
     replacePlayerFrame("about:blank");
     playbackStatus.textContent = "";
   }
@@ -810,18 +759,6 @@ async function refreshFamily() {
   }
 }
 
-watchExpand.addEventListener("click", requestNativeFullscreen);
-watchClose.addEventListener("click", closeWatchView);
-document.addEventListener("fullscreenchange", () => {
-  if (nativeFullscreenRequest && !document.fullscreenElement) closeWatchView();
-  updateFullscreenButton();
-});
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !watchToolbar.hidden) {
-    event.preventDefault();
-    closeWatchView();
-  }
-});
 loadButton.addEventListener("click", () => loadVideos());
 spinButton.addEventListener("click", () => openQuiz());
 pickButton.addEventListener("click", openVideoPicker);
