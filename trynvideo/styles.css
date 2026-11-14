@@ -5,6 +5,7 @@
   --panel: rgba(255, 251, 241, 0.88);
   --panel-strong: rgba(255, 247, 230, 0.96);
   --line: rgba(152, 103, 63, 0.16);
+  --button-outline: #81766f;
   --text: #2f1d17;
   --muted: #6f594e;
   --primary: #ff6b35;
@@ -125,12 +126,13 @@ body {
   width: 100%;
   min-height: 44px;
   margin: 0;
-  border: 1px solid var(--line);
+  border: 1px solid var(--button-outline);
   border-radius: 8px;
   background: #fff;
 }
 
 .subject-buttons input:checked + span {
+  border-color: #255dab;
   background: #255dab;
   color: #fff;
 }
@@ -336,6 +338,11 @@ button:not(.primary):not(.accent) {
   color: var(--text);
 }
 
+:is(.manage-actions, .settings-dialog .actions) button:not(.primary, .accent),
+#save-button {
+  border: 1px solid var(--button-outline);
+}
+
 #pick-button,
 #family-connect,
 #family-copy {
@@ -349,7 +356,6 @@ button:not(.primary):not(.accent) {
 }
 
 #save-button {
-  border: 1px solid var(--line);
   background: #fff;
 }
 
@@ -567,7 +573,7 @@ button:not(.primary):not(.accent) {
 .course-grid button {
   min-height: 80px;
   padding: 8px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--button-outline);
   border-radius: 8px;
 }
 
@@ -577,6 +583,7 @@ button:not(.primary):not(.accent) {
 }
 
 #math-course {
+  border-color: #255dab;
   background: #255dab;
   color: #fff;
 }
@@ -625,7 +632,7 @@ button:not(.primary):not(.accent) {
   min-width: 0;
   padding: 0;
   overflow: hidden;
-  border: 1px solid var(--line);
+  border: 1px solid var(--button-outline);
   border-radius: 8px;
 }
 
