@@ -612,6 +612,36 @@ button:not(.primary):not(.accent) {
   gap: 4px 8px;
 }
 
+.register-tools {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.youtube-shortcut {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  text-decoration: none;
+}
+
+.youtube-shortcut span {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 22px;
+  border-radius: 6px;
+  background: #c91520;
+  color: #fff;
+  font-size: 12px;
+}
+
+.youtube-shortcut:hover span {
+  background: #a91019;
+}
+
 .video-library .video-options {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   --registration-row: calc((100cqw - 16px) * 0.1875 + 32px);
