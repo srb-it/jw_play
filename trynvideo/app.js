@@ -337,11 +337,6 @@ function playSelectedVideo(videoId) {
     if (playerFrame !== frame) return;
     youtubePlayer = new api.Player(frame.id, {
       events: {
-        onReady(event) {
-          if (playerFrame !== frame) return;
-          event.target.unMute();
-          event.target.playVideo();
-        },
         onAutoplayBlocked() {
           if (playerFrame !== frame) return;
           playbackStatus.textContent = "자동재생이 차단됐어요. 영상의 재생 버튼을 눌러 주세요.";
