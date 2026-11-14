@@ -368,7 +368,7 @@ function ensureAudioContext() {
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   if (!AudioContext) return false;
   try {
-    if (!audioContext) {
+    if (!audioContext || audioContext.state === "closed") {
       const context = new AudioContext();
       const gain = context.createGain();
       gain.gain.value = 0.16;
@@ -377,7 +377,7 @@ function ensureAudioContext() {
       audioGainNode = gain;
     }
 
-    if (audioContext.state === "suspended") {
+    if (audioContext.state === "suspended" || audioContext.state === "interrupted") {
       audioContext.resume()?.catch(() => {});
     }
     return true;
@@ -725,6 +725,7 @@ function openQuiz(video = null) {
     return;
   }
 
+  ensureAudioContext();
   correctStreak = 0;
   quizVideo = video;
   loadYouTubeApi().catch(() => {});
