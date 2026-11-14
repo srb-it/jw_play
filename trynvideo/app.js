@@ -316,9 +316,10 @@ function loadYouTubeApi() {
   return youtubeApiLoading;
 }
 
-function replacePlayerFrame(src) {
+function replacePlayerFrame(src, conceal = false) {
   const parent = playerFrame.parentElement;
   const next = playerFrame.cloneNode(false);
+  next.style.visibility = conceal ? "hidden" : "";
   next.src = src;
   if (youtubePlayer) {
     youtubePlayer.destroy();
@@ -334,7 +335,7 @@ function replacePlayerFrame(src) {
 let preparedReward = null;
 
 function setupRewardPlayer(videoId, autoplay) {
-  const frame = replacePlayerFrame(getPlayerUrl(videoId, autoplay));
+  const frame = replacePlayerFrame(getPlayerUrl(videoId, autoplay), !autoplay);
   const reward = { videoId, frame, ready: false, requested: autoplay };
   preparedReward = reward;
   loadYouTubeApi().then((api) => {
@@ -354,7 +355,7 @@ function setupRewardPlayer(videoId, autoplay) {
           playbackStatus.textContent = "자동재생이 차단됐어요. 영상의 재생 버튼을 눌러 주세요.";
         },
         onStateChange(event) {
-          if (playerFrame !== frame) return;
+          if (playerFrame !== frame || !reward.requested) return;
           if (event.data === api.PlayerState.ENDED) {
             playbackStatus.textContent = "영상이 끝났어요.";
           } else if (event.data === api.PlayerState.PLAYING) {
@@ -362,7 +363,7 @@ function setupRewardPlayer(videoId, autoplay) {
           }
         },
         onError() {
-          if (playerFrame !== frame) return;
+          if (playerFrame !== frame || !reward.requested) return;
           playbackStatus.textContent = "영상을 재생할 수 없어요.";
         }
       }
@@ -374,6 +375,7 @@ function playSelectedVideo(videoId) {
   const reward = preparedReward;
   if (reward?.videoId === videoId && reward.frame === playerFrame && reward.ready && youtubePlayer) {
     reward.requested = true;
+    reward.frame.style.visibility = "";
     youtubePlayer.unMute();
     youtubePlayer.playVideo();
   } else {
