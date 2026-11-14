@@ -279,10 +279,10 @@ function buildRouletteSequence() {
   return repeated;
 }
 
-function getPlayerUrl(videoId, muted) {
+function getPlayerUrl(videoId) {
   const embedUrl = new URL(`https://www.youtube.com/embed/${videoId}`);
   embedUrl.searchParams.set("autoplay", "1");
-  embedUrl.searchParams.set("mute", muted ? "1" : "0");
+  embedUrl.searchParams.set("mute", "0");
   embedUrl.searchParams.set("playsinline", "1");
   embedUrl.searchParams.set("rel", "0");
   embedUrl.searchParams.set("enablejsapi", "1");
@@ -325,34 +325,27 @@ function replacePlayerFrame(src) {
 }
 
 
-function playSelectedVideo(videoId, muted = true) {
-  const frame = replacePlayerFrame(getPlayerUrl(videoId, muted));
-  let retriedMuted = muted;
+function playSelectedVideo(videoId) {
+  const frame = replacePlayerFrame(getPlayerUrl(videoId));
   loadYouTubeApi().then((api) => {
     if (playerFrame !== frame) return;
     youtubePlayer = new api.Player(frame.id, {
       events: {
         onReady(event) {
-          if (playerFrame === frame) event.target.playVideo();
+          if (playerFrame !== frame) return;
+          event.target.unMute();
+          event.target.playVideo();
         },
         onAutoplayBlocked(event) {
           if (playerFrame !== frame) return;
-          if (!retriedMuted) {
-            retriedMuted = true;
-            event.target.mute();
-            event.target.playVideo();
-          } else {
-            playbackStatus.textContent = "영상의 재생 버튼을 눌러 주세요.";
-          }
+          playbackStatus.textContent = "소리와 함께 보려면 영상의 재생 버튼을 눌러 주세요.";
         },
         onStateChange(event) {
           if (playerFrame !== frame) return;
           if (event.data === api.PlayerState.ENDED) {
             playbackStatus.textContent = "영상이 끝났어요.";
-          } else if (event.data === api.PlayerState.PLAYING && retriedMuted) {
-            playbackStatus.textContent = event.target.isMuted()
-              ? "무음으로 재생 중이에요. 영상에서 소리를 켤 수 있어요."
-              : "영상 재생 중";
+          } else if (event.data === api.PlayerState.PLAYING) {
+            playbackStatus.textContent = "영상 재생 중";
           }
         },
         onError() {
@@ -550,7 +543,7 @@ function spinRoulette() {
     pickButton.disabled = false;
     registerButton.disabled = false;
     try {
-      playSelectedVideo(winner.id, false);
+      playSelectedVideo(winner.id);
     } catch {
       playbackStatus.textContent = "영상을 재생할 수 없어요.";
     }
@@ -700,7 +693,7 @@ function finishChallenge() {
   quiz.close();
   if (quizVideo) {
     setWinner(quizVideo);
-    playSelectedVideo(quizVideo.id, false);
+    playSelectedVideo(quizVideo.id);
     playbackStatus.textContent = `${quizVideo.title} 재생!`;
   } else {
     spinRoulette();
