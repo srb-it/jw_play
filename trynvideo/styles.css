@@ -176,6 +176,20 @@ body {
   background: #14223b;
 }
 
+.planet-photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  background: #000;
+  border-radius: 8px;
+}
+
+#planet-credits {
+  margin-bottom: 0;
+  font-size: 0.8rem;
+}
+
 .constellation-art polyline {
   fill: none;
   stroke: #8cc8fa;

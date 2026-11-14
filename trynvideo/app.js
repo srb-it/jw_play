@@ -52,12 +52,19 @@ let phonicsDeck = [];
 let constellationDeck = [];
 let constellationAnswer = "";
 const constellationQuestion = document.getElementById("constellation-question");
+const planets = [
+  ["mercury", "수성"], ["venus", "금성"], ["earth", "지구"], ["mars", "화성"],
+  ["jupiter", "목성"], ["saturn", "토성"], ["uranus", "천왕성"], ["neptune", "해왕성"],
+];
+const SCIENCE_TOPIC_KEY = "trynvideo-science-topic";
+let scienceTopic = "constellations";
 try {
   const saved = JSON.parse(localStorage.getItem(ENGLISH_KEY));
   if (Object.hasOwn(phonicsSets, saved?.set) && /^(all|a|i|o|u)$/.test(saved.vowel)) {
     phonicsSettings = saved;
   }
   const savedCourse = localStorage.getItem(COURSE_KEY);
+  if (localStorage.getItem(SCIENCE_TOPIC_KEY) === "planets") scienceTopic = "planets";
   if (savedCourse === "english" || savedCourse === "science") activeCourse = savedCourse;
 } catch {}
 
@@ -65,7 +72,7 @@ function selectCourse(course) {
   activeCourse = course;
   studyGuide.textContent = course === "english"
     ? "영어 단어를 읽고 Next를 룰렛은 5번, 고른 영상은 10번 누르면 재생돼요"
-    : course === "science" ? "별자리 그림을 보고 룰렛은 연속 5번, 고른 영상은 연속 10번 맞춰야 재생돼요" : mathGuide;
+    : course === "science" ? `${scienceTopic === "planets" ? "행성 사진을" : "별자리 그림을"} 보고 룰렛은 연속 5번, 고른 영상은 연속 10번 맞춰야 재생돼요` : mathGuide;
   try { localStorage.setItem(COURSE_KEY, course); } catch {}
 }
 
@@ -653,14 +660,32 @@ function showPhonicsCard() {
   quizEquation.textContent = phonicsDeck[correctStreak % phonicsDeck.length].join(" / ");
 }
 
+function scienceItems(topic) {
+  return topic === "planets" ? planets : constellations;
+}
+
+function scienceImage(topic, item) {
+  if (topic !== "planets") return drawConstellation(item);
+  const photo = document.createElement("img");
+  photo.src = `planets/${item[0]}.jpg`;
+  photo.alt = "";
+  photo.className = "planet-photo";
+  return photo;
+}
+
 function showConstellationQuestion() {
+  const items = scienceItems(scienceTopic);
   if (!constellationDeck.length) {
-    constellationDeck = shuffled(constellations.filter(([id]) => id !== constellationAnswer));
+    constellationDeck = shuffled(items);
+    if (constellationDeck.at(-1)[0] === constellationAnswer) {
+      [constellationDeck[0], constellationDeck[constellationDeck.length - 1]] =
+        [constellationDeck.at(-1), constellationDeck[0]];
+    }
   }
   const answer = constellationDeck.pop();
   constellationAnswer = answer[0];
-  constellationQuestion.replaceChildren(drawConstellation(answer));
-  const choices = shuffled(constellations.filter((item) => item !== answer)).slice(0, 2);
+  constellationQuestion.replaceChildren(scienceImage(scienceTopic, answer));
+  const choices = shuffled(items.filter((item) => item !== answer)).slice(0, 2);
   quizAnswers.replaceChildren(...shuffled([answer, ...choices]).map(([id, name]) => {
     const button = document.createElement("button");
     button.type = "button";
@@ -722,9 +747,10 @@ function openQuiz(video = null) {
   }
   quizEquation.removeAttribute("lang");
   if (science) {
-    document.getElementById("quiz-title").textContent = "별자리 퀴즈";
-    quizEquation.textContent = "이 별자리의 이름은?";
-    constellationDeck = shuffled(constellations);
+    const planetQuiz = scienceTopic === "planets";
+    document.getElementById("quiz-title").textContent = planetQuiz ? "태양계 퀴즈" : "별자리 퀴즈";
+    quizEquation.textContent = planetQuiz ? "이 행성의 이름은?" : "이 별자리의 이름은?";
+    constellationDeck = shuffled(scienceItems(scienceTopic));
     updateQuizProgress();
     showConstellationQuestion();
     quiz.showModal();
@@ -910,6 +936,13 @@ const scienceSettings = document.getElementById("science-settings");
 const scienceCourse = document.getElementById("science-course");
 const constellationDialog = document.getElementById("constellation-dialog");
 const constellationGallery = document.getElementById("constellation-gallery");
+const scienceStudy = document.getElementById("constellation-study");
+const scienceChoices = [...scienceSettings.querySelectorAll('input[name="science-topic"]')];
+const scienceDraft = () => scienceChoices.find((choice) => choice.checked).value;
+const scienceStudyLabel = () => scienceDraft() === "planets" ? "태양계 공부하기" : "별자리 공부하기";
+scienceSettings.addEventListener("change", () => {
+  scienceStudy.textContent = scienceStudyLabel();
+});
 const phonicsPattern = document.getElementById("phonics-pattern");
 const phonicsPatternOptions = document.getElementById("phonics-pattern-options");
 
@@ -964,22 +997,31 @@ scienceCourse.addEventListener("click", () => {
   courseGrid.hidden = true;
   courseBack.hidden = false;
   scienceSettings.hidden = false;
+  scienceChoices.find((choice) => choice.value === scienceTopic).checked = true;
+  scienceStudy.textContent = scienceStudyLabel();
   courseBack.focus();
 });
-document.getElementById("constellation-study").addEventListener("click", () => {
-  if (!constellationGallery.children.length) {
-    for (const item of constellations) {
+scienceStudy.addEventListener("click", () => {
+  const topic = scienceDraft();
+  if (constellationGallery.dataset.topic !== topic) {
+    constellationGallery.replaceChildren();
+    for (const item of scienceItems(topic)) {
       const card = document.createElement("figure");
       const caption = document.createElement("figcaption");
       caption.textContent = item[1];
-      card.append(drawConstellation(item), caption);
+      card.append(scienceImage(topic, item), caption);
       constellationGallery.append(card);
     }
+    constellationGallery.dataset.topic = topic;
   }
+  document.getElementById("constellation-title").textContent = scienceStudyLabel();
+  document.getElementById("planet-credits").hidden = topic !== "planets";
   constellationDialog.showModal();
   constellationGallery.scrollTop = 0;
 });
 document.getElementById("constellation-select").addEventListener("click", () => {
+  scienceTopic = scienceDraft();
+  try { localStorage.setItem(SCIENCE_TOPIC_KEY, scienceTopic); } catch {}
   selectCourse("science");
   courseDialog.close();
 });

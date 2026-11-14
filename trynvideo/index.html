@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Happy Family, 공부하고 놀기 | 정상부녀</title>
-    <link rel="stylesheet" href="styles.css?v=science-card-2" />
+    <link rel="stylesheet" href="styles.css?v=solar-system-1" />
   </head>
   <body>
     <main class="app">
@@ -161,6 +161,7 @@
           <legend>주제</legend>
           <div class="subject-buttons phonics-sets">
             <label><input type="radio" name="science-topic" value="constellations" checked /><span>별자리</span></label>
+            <label><input type="radio" name="science-topic" value="planets" /><span>태양계</span></label>
           </div>
           <button id="constellation-study" type="button">별자리 공부하기</button>
         </fieldset>
@@ -176,6 +177,7 @@
         <form method="dialog"><button type="submit" aria-label="닫기">&times;</button></form>
       </header>
       <div id="constellation-gallery"></div>
+      <p id="planet-credits" hidden><a href="https://science.nasa.gov/solar-system/planets/" target="_blank" rel="noopener noreferrer">행성 사진 출처: NASA</a></p>
     </dialog>
 
     <dialog id="subject-dialog" class="settings-dialog" aria-labelledby="subject-title">
@@ -251,6 +253,6 @@
 
     <script src="phonics.js?v=3"></script>
     <script src="constellations.js?v=1"></script>
-    <script src="app.js?v=science-1"></script>
+    <script src="app.js?v=solar-system-1"></script>
   </body>
 </html>
