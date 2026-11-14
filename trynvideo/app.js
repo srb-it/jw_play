@@ -800,12 +800,7 @@ function gradeQuizAnswer(button, correct) {
   quizAnswers.disabled = true;
 
   if (correctStreak === requiredQuizStreak()) {
-    if (quizVideo) {
-      playQuizResultSound(correct);
-      finishChallenge();
-    } else {
-      finishAfterCorrectSound();
-    }
+    finishAfterCorrectSound();
     return;
   }
 
