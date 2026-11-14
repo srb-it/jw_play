@@ -285,9 +285,9 @@ function buildRouletteSequence() {
   return repeated;
 }
 
-function getPlayerUrl(videoId) {
+function getPlayerUrl(videoId, autoplay = true) {
   const embedUrl = new URL(`https://www.youtube.com/embed/${videoId}`);
-  embedUrl.searchParams.set("autoplay", "1");
+  embedUrl.searchParams.set("autoplay", autoplay ? "1" : "0");
   embedUrl.searchParams.set("mute", "0");
   embedUrl.searchParams.set("playsinline", "1");
   embedUrl.searchParams.set("rel", "0");
@@ -331,19 +331,26 @@ function replacePlayerFrame(src) {
 }
 
 
-function playSelectedVideo(videoId) {
-  const frame = replacePlayerFrame(getPlayerUrl(videoId));
+let preparedReward = null;
+
+function setupRewardPlayer(videoId, autoplay) {
+  const frame = replacePlayerFrame(getPlayerUrl(videoId, autoplay));
+  const reward = { videoId, frame, ready: false, requested: autoplay };
+  preparedReward = reward;
   loadYouTubeApi().then((api) => {
     if (playerFrame !== frame) return;
     youtubePlayer = new api.Player(frame.id, {
       events: {
         onReady(event) {
           if (playerFrame !== frame) return;
-          event.target.unMute();
-          event.target.playVideo();
+          reward.ready = true;
+          if (reward.requested) {
+            event.target.unMute();
+            event.target.playVideo();
+          }
         },
         onAutoplayBlocked() {
-          if (playerFrame !== frame) return;
+          if (playerFrame !== frame || !reward.requested) return;
           playbackStatus.textContent = "자동재생이 차단됐어요. 영상의 재생 버튼을 눌러 주세요.";
         },
         onStateChange(event) {
@@ -361,6 +368,17 @@ function playSelectedVideo(videoId) {
       }
     });
   }).catch(() => {});
+}
+
+function playSelectedVideo(videoId) {
+  const reward = preparedReward;
+  if (reward?.videoId === videoId && reward.frame === playerFrame && reward.ready && youtubePlayer) {
+    reward.requested = true;
+    youtubePlayer.unMute();
+    youtubePlayer.playVideo();
+  } else {
+    setupRewardPlayer(videoId, true);
+  }
 }
 
 function ensureAudioContext() {
@@ -511,7 +529,7 @@ function openVideoPicker() {
   videoPicker.showModal();
 }
 
-function spinRoulette() {
+function spinRoulette(winner) {
   if (spinning || !videos.length) {
     return;
   }
@@ -520,9 +538,7 @@ function spinRoulette() {
   spinButton.disabled = true;
   pickButton.disabled = true;
   registerButton.disabled = true;
-  playbackStatus.textContent = "룰렛이 돌아가는 중...";
-
-  const winnerIndex = Math.floor(Math.random() * videos.length);
+  const winnerIndex = videos.indexOf(winner);
   const sequence = buildRouletteSequence();
   resetRoulettePosition(sequence);
 
@@ -540,22 +556,13 @@ function spinRoulette() {
   });
 
   window.setTimeout(() => {
-    const winner = videos[winnerIndex];
     stopSpinMusic();
     setWinner(winner);
-    playbackStatus.textContent = `${winner.title} 당첨!`;
     spinning = false;
     spinButton.disabled = false;
     pickButton.disabled = false;
     registerButton.disabled = false;
-    try {
-      playSelectedVideo(winner.id);
-    } catch {
-      playbackStatus.textContent = "영상을 재생할 수 없어요.";
-    }
-    playWinnerChime();
   }, 4600);
-  startSpinMusic();
 }
 
 function requiredQuizStreak() {
@@ -673,14 +680,20 @@ function showConstellationQuestion() {
   }));
 }
 
+let quizReward = null;
+
 function finishChallenge() {
   quiz.close();
   if (quizVideo) {
     setWinner(quizVideo);
-    playSelectedVideo(quizVideo.id);
-    playbackStatus.textContent = `${quizVideo.title} 재생!`;
   } else {
-    spinRoulette();
+    spinRoulette(quizReward);
+  }
+  playbackStatus.textContent = `${quizReward.title} 재생 중…`;
+  try {
+    playSelectedVideo(quizReward.id);
+  } catch {
+    playbackStatus.textContent = "영상을 재생할 수 없어요.";
   }
 }
 
@@ -695,7 +708,9 @@ function openQuiz(video = null) {
   ensureAudioContext();
   correctStreak = 0;
   quizVideo = video;
-  loadYouTubeApi().catch(() => {});
+  quizReward = video ?? videos[Math.floor(Math.random() * videos.length)];
+  setupRewardPlayer(quizReward.id, false);
+  playbackStatus.textContent = "";
   clearQuizResult();
   quizFeedback.textContent = "";
   const english = activeCourse === "english";
@@ -758,14 +773,18 @@ function gradeQuizAnswer(button, correct) {
   quizMark.hidden = false;
   quizAnswers.disabled = true;
 
+  if (correctStreak === requiredQuizStreak()) {
+    playQuizResultSound(correct);
+    finishChallenge();
+    return;
+  }
+
   quizFeedbackTimer = window.setTimeout(() => {
     clearQuizResult();
     if (!quiz.open) {
       return;
     }
-    if (correctStreak === requiredQuizStreak()) {
-      finishChallenge();
-    } else if (correct) {
+    if (correct) {
       if (english) {
         phonicsCardIndex += 1;
         showPhonicsCard();
@@ -1032,6 +1051,10 @@ subjectDialog.addEventListener("close", () => {
 });
 quizClose.addEventListener("click", () => quiz.close());
 quiz.addEventListener("close", () => {
+  if (!quiz.open && preparedReward?.frame === playerFrame && !preparedReward.requested) {
+    replacePlayerFrame("about:blank");
+    preparedReward = null;
+  }
   if (!quiz.open && quizFeedbackTimer !== null) {
     clearQuizResult();
   }
