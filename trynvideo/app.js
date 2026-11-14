@@ -334,28 +334,36 @@ function replacePlayerFrame(src) {
 function playSelectedVideo(videoId) {
   const frame = replacePlayerFrame(getPlayerUrl(videoId));
   let showedPlaybackHint = false;
+  const showPlaybackHint = () => {
+    if (playerFrame !== frame || showedPlaybackHint) return;
+    showedPlaybackHint = true;
+    playbackStatus.textContent = "영상의 ▶ 버튼을 누르면 소리와 함께 재생돼요.";
+    if (window.matchMedia("(pointer: coarse)").matches) {
+      frame.scrollIntoView({ block: "center" });
+    }
+  };
+  const hintTimer = window.setTimeout(showPlaybackHint, 5000);
   loadYouTubeApi().then((api) => {
     if (playerFrame !== frame) return;
     youtubePlayer = new api.Player(frame.id, {
       events: {
         onAutoplayBlocked() {
-          if (playerFrame !== frame || showedPlaybackHint) return;
-          showedPlaybackHint = true;
-          playbackStatus.textContent = "영상의 ▶ 버튼을 누르면 소리와 함께 재생돼요.";
-          if (window.matchMedia("(pointer: coarse)").matches) {
-            frame.scrollIntoView({ block: "center" });
-          }
+          window.clearTimeout(hintTimer);
+          showPlaybackHint();
         },
         onStateChange(event) {
           if (playerFrame !== frame) return;
           if (event.data === api.PlayerState.ENDED) {
+            window.clearTimeout(hintTimer);
             playbackStatus.textContent = "영상이 끝났어요.";
           } else if (event.data === api.PlayerState.PLAYING) {
+            window.clearTimeout(hintTimer);
             playbackStatus.textContent = "영상 재생 중";
           }
         },
         onError() {
           if (playerFrame !== frame) return;
+          window.clearTimeout(hintTimer);
           playbackStatus.textContent = "영상을 재생할 수 없어요.";
         }
       }
@@ -696,7 +704,7 @@ function finishChallenge() {
 }
 
 function playReward(video) {
-  playbackStatus.textContent = `${video.title} 재생 중…`;
+  playbackStatus.textContent = `${video.title} 재생 준비 중…`;
   try {
     playSelectedVideo(video.id);
   } catch {
