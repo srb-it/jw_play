@@ -591,7 +591,7 @@ button:not(.primary):not(.accent) {
   padding: 8px;
 }
 
-#register-dialog[open] {
+.video-library[open] {
   container-type: inline-size;
   display: flex;
   flex-direction: column;
@@ -606,7 +606,7 @@ button:not(.primary):not(.accent) {
   gap: 4px 8px;
 }
 
-#registered-videos {
+.video-library .video-options {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   --registration-row: calc((100cqw - 16px) * 0.1875 + 32px);
   grid-auto-rows: var(--registration-row);
@@ -617,7 +617,7 @@ button:not(.primary):not(.accent) {
   overscroll-behavior: contain;
 }
 
-#register-dialog > :not(#registered-videos) {
+.video-library > :not(.video-options) {
   flex-shrink: 0;
 }
 
@@ -635,7 +635,8 @@ button:not(.primary):not(.accent) {
   font-size: 2rem;
 }
 
-.registered-video {
+.registered-video,
+#video-options button {
   position: relative;
   display: grid;
   grid-template-rows: minmax(0, 1fr) 32px;
@@ -644,12 +645,14 @@ button:not(.primary):not(.accent) {
   border-radius: 8px;
 }
 
-.registered-video img {
+.registered-video img,
+#video-options img {
   height: 100%;
   aspect-ratio: auto;
 }
 
-.registered-video span {
+.registered-video span,
+#video-options span {
   grid-row: 2;
   display: block;
   padding-block: 5px;
