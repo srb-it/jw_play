@@ -123,6 +123,16 @@ body {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+#phonics-pattern {
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid var(--button-outline);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+}
+
 #phonics-actions {
   justify-content: center;
 }

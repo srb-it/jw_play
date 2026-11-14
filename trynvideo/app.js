@@ -645,7 +645,10 @@ function renderAnswerButtons(values) {
 }
 
 function showPhonicsCard() {
-  if (!phonicsDeck.length) phonicsDeck = buildPhonicsDeck(phonicsSettings.set, phonicsSettings.vowel);
+  if (!phonicsDeck.length) {
+    const { set, vowel, pattern } = phonicsSettings;
+    phonicsDeck = buildPhonicsDeck(set, vowel, pattern, requiredQuizStreak());
+  }
   quizProgress.textContent = `읽은 카드 ${correctStreak} / ${requiredQuizStreak()}`;
   quizEquation.textContent = phonicsDeck.shift().join(" / ");
 }
@@ -864,6 +867,20 @@ const englishCourse = document.getElementById("english-course");
 const mathCourse = document.getElementById("math-course");
 const courseBack = document.getElementById("course-back");
 const englishSettings = document.getElementById("english-settings");
+const phonicsPattern = document.getElementById("phonics-pattern");
+const phonicsPatternOptions = document.getElementById("phonics-pattern-options");
+
+function renderPhonicsPatterns(selected) {
+  const isLong = englishSettings.elements.set.value === "long";
+  phonicsPatternOptions.hidden = !isLong;
+  const groups = isLong ? phonicsGroups(englishSettings.elements.vowel.value) : [];
+  phonicsPattern.replaceChildren(new Option("처음부터", ""), ...groups.map(([ending]) => new Option(`-${ending}`, ending)));
+  phonicsPattern.value = groups.some(([ending]) => ending === selected) ? selected : "";
+}
+
+englishSettings.addEventListener("change", (event) => {
+  if (event.target !== phonicsPattern) renderPhonicsPatterns(phonicsPattern.value);
+});
 
 function showCoursePicker() {
   courseTitle.textContent = "공부 과목 선택";
@@ -882,12 +899,13 @@ englishCourse.addEventListener("click", () => {
   courseBack.hidden = false;
   englishSettings.elements.set.value = phonicsSettings.set;
   englishSettings.elements.vowel.value = phonicsSettings.vowel;
+  renderPhonicsPatterns(phonicsSettings.pattern);
   englishSettings.hidden = false;
   courseBack.focus();
 });
 englishSettings.addEventListener("submit", (event) => {
   event.preventDefault();
-  phonicsSettings = { set: englishSettings.elements.set.value, vowel: englishSettings.elements.vowel.value };
+  phonicsSettings = { set: englishSettings.elements.set.value, vowel: englishSettings.elements.vowel.value, pattern: phonicsPattern.value };
   try { localStorage.setItem(ENGLISH_KEY, JSON.stringify(phonicsSettings)); } catch {}
   selectCourse("english");
   courseDialog.close();

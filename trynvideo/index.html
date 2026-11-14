@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Happy Family, 공부하고 놀기 | 정상부녀</title>
-    <link rel="stylesheet" href="styles.css?v=phonics-1" />
+    <link rel="stylesheet" href="styles.css?v=phonics-groups-1" />
   </head>
   <body>
     <main class="app">
@@ -149,6 +149,11 @@
             <label><input type="radio" name="vowel" value="u" /><span>U</span></label>
           </div>
         </fieldset>
+        <fieldset id="phonics-pattern-options" class="subject-options">
+          <legend>발음 묶음</legend>
+          <label for="phonics-pattern">시작할 묶음</label>
+          <select id="phonics-pattern" name="pattern"></select>
+        </fieldset>
         <div class="actions"><button type="submit" class="accent">적용</button></div>
       </form>
     </dialog>
@@ -220,7 +225,7 @@
       <p id="quiz-feedback" class="quiz-feedback" role="status"></p>
     </dialog>
 
-    <script src="phonics.js?v=1"></script>
-    <script src="app.js?v=phonics-1"></script>
+    <script src="phonics.js?v=2"></script>
+    <script src="app.js?v=phonics-groups-1"></script>
   </body>
 </html>

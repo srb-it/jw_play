@@ -1,9 +1,9 @@
 const phonicsSets = {
   long: {
-    a: "bake cake lake rake make tape cape wave cave name game same date mate gate mane vase case made",
-    i: "pine line nine vine hike bike like time lime bite kite hide ride dive hive five live pipe wipe",
-    o: "hose nose pose rose hope rope note vote mole pole dome home bone cone",
-    u: "cube tube cute mute dune June tune mule",
+    a: { ake: "bake cake lake rake make", ape: "tape cape", ave: "wave cave", ame: "name game same", ate: "date mate gate", ane: "mane", ase: "vase case", ade: "made" },
+    i: { ine: "pine line nine vine", ike: "hike bike like", ime: "time lime", ite: "bite kite", ide: "hide ride", ive: "dive hive five live", ipe: "pipe wipe" },
+    o: { ose: "hose nose pose rose", ope: "hope rope", ote: "note vote", ole: "mole pole", ome: "dome home", one: "bone cone" },
+    u: { ube: "cube tube", ute: "cute mute", une: "dune June tune", ule: "mule" },
   },
   mixed: {
     a: "man/mane can/cane tap/tape rat hat/hate tag pan ham jam bat cat mat/mate ram dam lap cap/cape nap map rake",
@@ -13,7 +13,24 @@ const phonicsSets = {
   },
 };
 
-function buildPhonicsDeck(set, vowel) {
+function phonicsGroups(vowel) {
+  const groups = phonicsSets.long;
+  return Object.entries(vowel === "all" ? Object.assign({}, ...Object.values(groups)) : groups[vowel]);
+}
+
+function buildPhonicsDeck(set, vowel, pattern = "", target = 10) {
+  if (set === "long") {
+    const groups = phonicsGroups(vowel);
+    const start = Math.max(0, groups.findIndex(([ending]) => ending === pattern));
+    const ordered = [...groups.slice(start), ...groups.slice(0, start)];
+    let entries = ordered.map(([, words]) => words).join(" ").split(" ");
+    if (entries.length < target) {
+      entries = entries.concat(phonicsGroups("all")
+        .filter(([ending]) => !groups.some(([selected]) => selected === ending))
+        .flatMap(([, words]) => words.split(" ")));
+    }
+    return entries.slice(0, target).map((word) => [word]);
+  }
   const groups = phonicsSets[set];
   const entries = vowel === "all" ? Object.values(groups) : [groups[vowel]];
   const deck = [...new Set(entries.join(" ").split(" "))].map((entry) => entry.split("/"));
