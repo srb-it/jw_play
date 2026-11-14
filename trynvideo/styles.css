@@ -622,11 +622,6 @@ button:not(.primary):not(.accent) {
   margin-bottom: 4px;
 }
 
-#play-with-sound {
-  min-height: 44px;
-  padding: 6px 12px;
-}
-
 .playback-status {
   margin: 0;
   color: #166543;
