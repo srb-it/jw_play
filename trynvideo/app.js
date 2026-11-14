@@ -538,6 +538,7 @@ function spinRoulette(winner) {
   spinButton.disabled = true;
   pickButton.disabled = true;
   registerButton.disabled = true;
+  playbackStatus.textContent = "룰렛이 돌아가는 중...";
   const winnerIndex = videos.indexOf(winner);
   const sequence = buildRouletteSequence();
   resetRoulettePosition(sequence);
@@ -552,17 +553,19 @@ function spinRoulette(winner) {
       const offset = shellCenter - (cardBounds.left - stripLeft + cardBounds.width / 2);
       rouletteStrip.style.transition = "transform 4.5s cubic-bezier(0.14, 0.82, 0.18, 1)";
       rouletteStrip.style.transform = `translateX(${offset}px)`;
+      window.setTimeout(() => {
+        stopSpinMusic();
+        setWinner(winner);
+        spinning = false;
+        spinButton.disabled = false;
+        pickButton.disabled = false;
+        registerButton.disabled = false;
+        playReward(winner);
+      }, 4600);
     });
   });
 
-  window.setTimeout(() => {
-    stopSpinMusic();
-    setWinner(winner);
-    spinning = false;
-    spinButton.disabled = false;
-    pickButton.disabled = false;
-    registerButton.disabled = false;
-  }, 4600);
+  startSpinMusic();
 }
 
 function requiredQuizStreak() {
@@ -684,14 +687,18 @@ let quizReward = null;
 
 function finishChallenge() {
   quiz.close();
-  if (quizVideo) {
-    setWinner(quizVideo);
-  } else {
+  if (!quizVideo) {
     spinRoulette(quizReward);
+    return;
   }
-  playbackStatus.textContent = `${quizReward.title} 재생 중…`;
+  setWinner(quizVideo);
+  playReward(quizVideo);
+}
+
+function playReward(video) {
+  playbackStatus.textContent = `${video.title} 재생 중…`;
   try {
-    playSelectedVideo(quizReward.id);
+    playSelectedVideo(video.id);
   } catch {
     playbackStatus.textContent = "영상을 재생할 수 없어요.";
   }
@@ -1051,7 +1058,7 @@ subjectDialog.addEventListener("close", () => {
 });
 quizClose.addEventListener("click", () => quiz.close());
 quiz.addEventListener("close", () => {
-  if (!quiz.open && preparedReward?.frame === playerFrame && !preparedReward.requested) {
+  if (!quiz.open && !spinning && preparedReward?.frame === playerFrame && !preparedReward.requested) {
     replacePlayerFrame("about:blank");
     preparedReward = null;
   }
