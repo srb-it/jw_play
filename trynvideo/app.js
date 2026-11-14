@@ -100,7 +100,11 @@ try {
 } catch {}
 let quizQuestions = [];
 const QUIZ_FEEDBACK_DURATION = 1000;
-const QUIZ_MALLET_GAIN = 3;
+const quizSounds = ["incorrect", "correct"].map((name) => {
+  const sound = new Audio(`sounds/${name}.wav`);
+  sound.preload = "auto";
+  return sound;
+});
 const SPIN_TICK_GAIN = 15;
 const LOCAL_URL = "http://localhost:4174";
 const PLACEHOLDER_VIDEO_IDS = ["M7lc1UVf-VE", "dQw4w9WgXcQ", "ysz5S6PUM-U", "aqz-KE-bpKQ", "ScMzIvxBSi4"];
@@ -568,32 +572,10 @@ function clearQuizResult() {
   quizAnswers.disabled = false;
 }
 
-function playMalletStrike(start, partials) {
-  for (const [frequency, volume, duration] of partials) {
-    const tone = audioContext.createOscillator();
-    const envelope = audioContext.createGain();
-    tone.frequency.value = frequency;
-    envelope.gain.setValueAtTime(0, start);
-    envelope.gain.linearRampToValueAtTime(volume * QUIZ_MALLET_GAIN, start + 0.003);
-    envelope.gain.exponentialRampToValueAtTime(0.001, start + duration);
-    tone.connect(envelope);
-    envelope.connect(audioContext.destination);
-    tone.onended = () => envelope.disconnect();
-    tone.start(start);
-    tone.stop(start + duration);
-  }
-}
-
 function playQuizResultSound(correct) {
-  if (!ensureAudioContext()) return;
-  const start = audioContext.currentTime;
-  if (correct) {
-    playMalletStrike(start, [[784, 0.21, 0.25], [2352, 0.07, 0.1], [4916, 0.025, 0.05]]);
-    playMalletStrike(start + 0.18, [[659, 0.21, 0.25], [1977, 0.07, 0.1], [4132, 0.025, 0.05]]);
-    playMalletStrike(start + 0.36, [[523, 0.21, 0.42], [1569, 0.07, 0.14], [3279, 0.025, 0.07]]);
-  } else {
-    playMalletStrike(start, [[932, 0.19, 0.18], [2796, 0.095, 0.075], [4680, 0.035, 0.035]]);
-  }
+  const sound = quizSounds[Number(correct)];
+  sound.currentTime = 0;
+  sound.play().catch(() => {});
 }
 
 function buildQuestions(settings) {
