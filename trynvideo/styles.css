@@ -137,6 +137,69 @@ body {
   justify-content: center;
 }
 
+#phonics-restart {
+  border: 1px solid var(--button-outline);
+}
+
+#constellation-dialog {
+  max-height: calc(100dvh - 24px);
+}
+
+#constellation-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  max-height: min(62dvh, 540px);
+  overflow-y: auto;
+  margin-top: 12px;
+}
+
+#constellation-gallery figure {
+  margin: 0;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.constellation-art {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+  background: #14223b;
+}
+
+.constellation-art polyline {
+  fill: none;
+  stroke: #8cc8fa;
+  stroke-width: 1.4;
+}
+
+.constellation-art circle {
+  fill: #fff;
+}
+
+#constellation-question:not([hidden]) {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+#constellation-question:not([hidden]) + #quiz-equation {
+  font-size: 1.2rem;
+  white-space: normal;
+  text-align: center;
+}
+
+#math-quiz:has(#constellation-question:not([hidden])) #quiz-answers button {
+  font-size: 0.9rem;
+  padding-inline: 4px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  #constellation-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 #phonics-actions[hidden],
 #quiz-answers[hidden] {
   display: none;

@@ -49,23 +49,27 @@ const phonicsNext = document.getElementById("phonics-next");
 let activeCourse = "math";
 let phonicsSettings = { set: "long", vowel: "all" };
 let phonicsDeck = [];
+let constellationDeck = [];
+let constellationAnswer = "";
+const constellationQuestion = document.getElementById("constellation-question");
 try {
   const saved = JSON.parse(localStorage.getItem(ENGLISH_KEY));
   if (Object.hasOwn(phonicsSets, saved?.set) && /^(all|a|i|o|u)$/.test(saved.vowel)) {
     phonicsSettings = saved;
   }
-  if (localStorage.getItem(COURSE_KEY) === "english") activeCourse = "english";
+  const savedCourse = localStorage.getItem(COURSE_KEY);
+  if (savedCourse === "english" || savedCourse === "science") activeCourse = savedCourse;
 } catch {}
 
 function selectCourse(course) {
   activeCourse = course;
   studyGuide.textContent = course === "english"
     ? "영어 단어를 읽고 Next를 룰렛은 5번, 고른 영상은 10번 누르면 재생돼요"
-    : mathGuide;
+    : course === "science" ? "별자리 그림을 보고 룰렛은 연속 5번, 고른 영상은 연속 10번 맞춰야 재생돼요" : mathGuide;
   try { localStorage.setItem(COURSE_KEY, course); } catch {}
 }
 
-if (activeCourse === "english") selectCourse("english");
+if (activeCourse !== "math") selectCourse(activeCourse);
 const subjectDialog = document.getElementById("subject-dialog");
 const subjectForm = document.getElementById("subject-form");
 const subjectFields = subjectForm.elements;
@@ -645,12 +649,26 @@ function renderAnswerButtons(values) {
 }
 
 function showPhonicsCard() {
-  if (!phonicsDeck.length) {
-    const { set, vowel, pattern } = phonicsSettings;
-    phonicsDeck = buildPhonicsDeck(set, vowel, pattern, requiredQuizStreak());
-  }
   quizProgress.textContent = `읽은 카드 ${correctStreak} / ${requiredQuizStreak()}`;
-  quizEquation.textContent = phonicsDeck.shift().join(" / ");
+  quizEquation.textContent = phonicsDeck[correctStreak % phonicsDeck.length].join(" / ");
+}
+
+function showConstellationQuestion() {
+  if (!constellationDeck.length) {
+    constellationDeck = shuffled(constellations.filter(([id]) => id !== constellationAnswer));
+  }
+  const answer = constellationDeck.pop();
+  constellationAnswer = answer[0];
+  constellationQuestion.replaceChildren(drawConstellation(answer));
+  const choices = shuffled(constellations.filter((item) => item !== answer)).slice(0, 2);
+  quizAnswers.replaceChildren(...shuffled([answer, ...choices]).map(([id, name]) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.value = id;
+    button.textContent = name;
+    button.addEventListener("click", () => checkQuizAnswer(button));
+    return button;
+  }));
 }
 
 function finishChallenge() {
@@ -670,6 +688,12 @@ phonicsNext.addEventListener("click", () => {
   if (correctStreak === requiredQuizStreak()) finishChallenge();
   else showPhonicsCard();
 });
+document.getElementById("phonics-restart").addEventListener("click", () => {
+  if (!quiz.open || phonicsActions.hidden) return;
+  correctStreak = 0;
+  showPhonicsCard();
+  phonicsNext.focus();
+});
 
 function openQuiz(video = null) {
   if (spinning || quiz.open || (video ? pickButton.disabled : spinButton.disabled)) {
@@ -682,18 +706,31 @@ function openQuiz(video = null) {
   clearQuizResult();
   quizFeedback.textContent = "";
   const english = activeCourse === "english";
+  const science = activeCourse === "science";
+  constellationQuestion.hidden = !science;
   phonicsActions.hidden = !english;
   quizAnswers.hidden = english;
   if (english) {
     document.getElementById("quiz-title").textContent = "Smart Phonics";
     quizEquation.lang = "en";
-    phonicsDeck = [];
+    const { set, vowel, pattern } = phonicsSettings;
+    phonicsDeck = buildPhonicsDeck(set, vowel, pattern, requiredQuizStreak());
     showPhonicsCard();
     quiz.showModal();
     phonicsNext.focus();
     return;
   }
   quizEquation.removeAttribute("lang");
+  if (science) {
+    document.getElementById("quiz-title").textContent = "별자리 퀴즈";
+    quizEquation.textContent = "이 별자리의 이름은?";
+    constellationDeck = shuffled(constellations);
+    updateQuizProgress();
+    showConstellationQuestion();
+    quiz.showModal();
+    quizAnswers.firstElementChild.focus();
+    return;
+  }
   recentQuestions = [];
   quizQuestions = buildQuestions(subject);
   const operation = operations[subject.operation];
@@ -709,7 +746,8 @@ function checkQuizAnswer(button) {
     return;
   }
 
-  const correct = Number(button.value) === expectedAnswer;
+  const science = activeCourse === "science";
+  const correct = science ? button.value === constellationAnswer : Number(button.value) === expectedAnswer;
   correctStreak = correct ? correctStreak + 1 : 0;
   updateQuizProgress();
   quizFeedback.textContent = correct
@@ -728,7 +766,8 @@ function checkQuizAnswer(button) {
     if (correctStreak === requiredQuizStreak()) {
       finishChallenge();
     } else if (correct) {
-      showNextQuestion();
+      if (science) showConstellationQuestion();
+      else showNextQuestion();
       quizAnswers.firstElementChild.focus();
     } else {
       button.focus();
@@ -867,6 +906,10 @@ const englishCourse = document.getElementById("english-course");
 const mathCourse = document.getElementById("math-course");
 const courseBack = document.getElementById("course-back");
 const englishSettings = document.getElementById("english-settings");
+const scienceSettings = document.getElementById("science-settings");
+const scienceCourse = document.getElementById("science-course");
+const constellationDialog = document.getElementById("constellation-dialog");
+const constellationGallery = document.getElementById("constellation-gallery");
 const phonicsPattern = document.getElementById("phonics-pattern");
 const phonicsPatternOptions = document.getElementById("phonics-pattern-options");
 
@@ -887,6 +930,7 @@ function showCoursePicker() {
   courseGrid.hidden = false;
   courseBack.hidden = true;
   englishSettings.hidden = true;
+  scienceSettings.hidden = true;
 }
 
 document.getElementById("subject-button").addEventListener("click", () => {
@@ -911,8 +955,33 @@ englishSettings.addEventListener("submit", (event) => {
   courseDialog.close();
 });
 courseBack.addEventListener("click", () => {
+  const previous = scienceSettings.hidden ? englishCourse : scienceCourse;
   showCoursePicker();
-  englishCourse.focus();
+  previous.focus();
+});
+scienceCourse.addEventListener("click", () => {
+  courseTitle.textContent = "과학";
+  courseGrid.hidden = true;
+  courseBack.hidden = false;
+  scienceSettings.hidden = false;
+  courseBack.focus();
+});
+document.getElementById("constellation-study").addEventListener("click", () => {
+  if (!constellationGallery.children.length) {
+    for (const item of constellations) {
+      const card = document.createElement("figure");
+      const caption = document.createElement("figcaption");
+      caption.textContent = item[1];
+      card.append(drawConstellation(item), caption);
+      constellationGallery.append(card);
+    }
+  }
+  constellationDialog.showModal();
+  constellationGallery.scrollTop = 0;
+});
+document.getElementById("constellation-select").addEventListener("click", () => {
+  selectCourse("science");
+  courseDialog.close();
 });
 mathCourse.addEventListener("click", () => {
   courseDialog.close();
