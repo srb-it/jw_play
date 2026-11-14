@@ -792,16 +792,21 @@ function showSubjectOptions() {
   subjectFields.multiplyTen.disabled = subjectFields.timesTable.checked;
 }
 
+function fillSubjectForm(settings) {
+  subjectFields.operation.value = settings.operation;
+  for (const key of Object.keys(defaultSubject)) {
+    if (typeof defaultSubject[key] === "boolean") subjectFields[key].checked = settings[key];
+  }
+  subjectFields.table.value = settings.table;
+  showSubjectOptions();
+}
+
 document.getElementById("subject-button").addEventListener("click", () => {
   subjectDialog.returnValue = "";
-  subjectFields.operation.value = subject.operation;
-  for (const key of Object.keys(defaultSubject)) {
-    if (typeof defaultSubject[key] === "boolean") subjectFields[key].checked = subject[key];
-  }
-  subjectFields.table.value = subject.table;
-  showSubjectOptions();
+  fillSubjectForm(subject);
   subjectDialog.showModal();
 });
+document.getElementById("subject-reset").addEventListener("click", () => fillSubjectForm(defaultSubject));
 subjectForm.addEventListener("change", showSubjectOptions);
 subjectDialog.addEventListener("close", () => {
   if (subjectDialog.returnValue !== "save") return;

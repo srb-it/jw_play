@@ -557,6 +557,17 @@ button:not(.primary):not(.accent) {
   font-size: 1.35rem;
 }
 
+#subject-reset {
+  flex: none;
+  min-height: 44px;
+  padding: 0 6px;
+  background: transparent;
+  color: #255dab;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 #quiz-close,
 #picker-close {
   width: 44px;
