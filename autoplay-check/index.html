@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>유튜브 자동재생 테스트</title>
+  <style>
+    body { max-width: 620px; margin: 20px auto; padding: 0 14px; font: 16px system-ui, sans-serif; color: #182019; }
+    h1 { font-size: 1.4rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    button { min-height: 44px; padding: 6px 12px; border: 1px solid #567164; border-radius: 8px; background: #e9f5ee; color: inherit; font: inherit; }
+    #screen { aspect-ratio: 16 / 9; background: #181818; }
+    iframe { width: 100%; height: 100%; border: 0; }
+    li { margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+  <h1>유튜브 자동재생 테스트</h1>
+  <div class="actions">
+    <button id="instant">1. 즉시 재생</button>
+    <button id="delayed">2. 5초 뒤 재생</button>
+    <button id="manual">3. 영상의 ▶ 직접 누르기</button>
+  </div>
+  <p id="status" role="status">테스트를 선택해 주세요.</p>
+  <div id="screen"></div>
+  <h2>테스트 기록</h2>
+  <ol id="history"></ol>
+  <script>
+    const status = document.getElementById("status");
+    const screen = document.getElementById("screen");
+    const historyList = document.getElementById("history");
+    let run = 0;
+    let timer;
+    let player;
+    const api = new Promise((resolve) => {
+      window.onYouTubeIframeAPIReady = () => resolve(window.YT);
+      const script = document.createElement("script");
+      script.src = "https://www.youtube.com/iframe_api";
+      script.onerror = () => resolve(null);
+      document.head.append(script);
+    });
+
+    function report(label, message) {
+      status.textContent = message;
+      const entry = document.createElement("li");
+      entry.textContent = label + ": " + message;
+      historyList.append(entry);
+    }
+
+    function test(label, delay, autoplay) {
+      const id = ++run;
+      clearTimeout(timer);
+      player?.destroy();
+      player = null;
+      screen.replaceChildren();
+      if (delay) report(label, "5초 기다리는 중…");
+      const mount = () => {
+        if (id !== run) return;
+        const url = new URL("https://www.youtube.com/embed/TqZgk2AQhk8");
+        url.search = new URLSearchParams({ autoplay: autoplay ? "1" : "0", mute: "0", playsinline: "1", rel: "0", enablejsapi: "1", origin: location.origin });
+        const frame = document.createElement("iframe");
+        frame.id = "video-" + id;
+        frame.title = "유튜브 테스트 영상";
+        frame.allow = "autoplay; encrypted-media; picture-in-picture";
+        frame.referrerPolicy = "strict-origin-when-cross-origin";
+        frame.allowFullscreen = true;
+        frame.src = url.href;
+        report(label, autoplay ? "재생 요청을 보냈어요." : "영상 안의 ▶를 직접 눌러 주세요.");
+        screen.append(frame);
+        let settled = false;
+        const result = (message) => {
+          if (id !== run || settled) return;
+          settled = true;
+          report(label, message);
+        };
+        setTimeout(() => result("아직 재생이 확인되지 않았어요."), 12000);
+        api.then((yt) => {
+          if (id !== run || !yt) return;
+          player = new yt.Player(frame.id, { events: {
+            onAutoplayBlocked: () => result("자동재생 차단"),
+            onError: (e) => result("유튜브 오류 " + e.data),
+            onStateChange: (e) => {
+              if (e.data !== yt.PlayerState.PLAYING) return;
+              result(e.target.isMuted() ? "무음으로 재생됨" : "재생 시작. 소리가 실제로 들리는지 확인해 주세요.");
+            }
+          } });
+        });
+      };
+      if (delay) timer = setTimeout(mount, delay);
+      else mount();
+    }
+
+    document.getElementById("instant").onclick = () => test("1. 즉시", 0, true);
+    document.getElementById("delayed").onclick = () => test("2. 5초 뒤", 5000, true);
+    document.getElementById("manual").onclick = () => test("3. 직접", 0, false);
+  </script>
+</body>
+</html>
