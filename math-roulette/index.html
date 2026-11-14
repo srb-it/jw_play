@@ -17,19 +17,16 @@
 
       <section class="layout">
         <section class="panel controls">
-          <div class="game-toolbar">
-            <div class="play-actions" role="group" aria-label="게임">
-              <button id="spin-button" class="accent" type="button" disabled>룰렛 돌리기</button>
-              <button id="pick-button" type="button" disabled>영상 골라 보기</button>
-            </div>
+          <details class="game-settings">
+            <summary><span>게임 설정</span><span id="video-count" hidden></span></summary>
             <div class="manage-actions" role="group" aria-label="관리">
+              <button type="button" disabled>공부 과목 선택</button>
               <button id="load-button" type="button">링크 불러오기</button>
               <button id="register-button" type="button" aria-haspopup="dialog">영상 등록하기</button>
-              <button type="button" disabled>게임 규칙 설정하기</button>
               <button id="sync-button" type="button" aria-haspopup="dialog">기기 간 동기화</button>
             </div>
-          </div>
-          <p id="status" class="status" role="status">유튜브 링크를 두 개 이상 줄바꿈으로 붙여 넣어 주세요.</p>
+            <p id="status" class="status" role="status">유튜브 링크를 두 개 이상 줄바꿈으로 붙여 넣어 주세요.</p>
+          </details>
           <p id="server-note" class="server-note" hidden></p>
         </section>
 
@@ -76,6 +73,10 @@
               <p id="playback-status" class="playback-status" role="status"></p>
             </div>
             <h2 class="player-title">영상 플레이어</h2>
+            <div class="play-actions player-actions" role="group" aria-label="게임">
+              <button id="spin-button" class="accent" type="button" disabled>룰렛 돌리기</button>
+              <button id="pick-button" type="button" disabled>영상 골라 보기</button>
+            </div>
           </div>
 
           <div class="player-wrap">

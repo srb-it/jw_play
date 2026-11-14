@@ -443,6 +443,9 @@ function loadVideos(preservePlayback = false) {
   }
 
   videos = parsed;
+  const videoCount = document.getElementById("video-count");
+  videoCount.textContent = `불러온 영상 ${videos.length}개`;
+  videoCount.hidden = false;
   resetRoulettePosition(buildRouletteSequence());
   spinButton.disabled = false;
   pickButton.disabled = false;

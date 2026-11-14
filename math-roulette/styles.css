@@ -96,9 +96,28 @@ body {
 }
 
 .game-toolbar button,
+.manage-actions button,
+.player-actions button,
 .settings-dialog .quiz-header button {
   min-height: 44px;
   border-radius: 8px;
+}
+
+.game-settings summary {
+  cursor: pointer;
+  padding: 8px 0;
+  font-weight: 800;
+}
+
+#video-count {
+  margin-inline-start: 12px;
+  color: var(--muted);
+  font-size: .875rem;
+}
+
+.manage-actions,
+.player-actions {
+  margin-top: 10px;
 }
 
 .settings-dialog .quiz-header {
@@ -559,6 +578,17 @@ button:not(.primary):not(.accent) {
 }
 
 @media (max-width: 720px) {
+  .game-settings .manage-actions,
+  .player-head .player-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .manage-actions button,
+  .player-actions button {
+    padding: 8px 6px;
+  }
+
   .app {
     width: calc(100% - 20px);
     padding-top: 10px;
