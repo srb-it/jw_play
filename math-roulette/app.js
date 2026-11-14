@@ -455,7 +455,7 @@ function loadVideos(preservePlayback = false) {
     replacePlayerFrame("about:blank");
     playbackStatus.textContent = "";
   }
-  updateStatus(`${videos.length}개의 영상을 불러왔어요.`);
+  updateStatus("");
 }
 
 function openVideoPicker() {
