@@ -594,14 +594,6 @@ button:not(.primary):not(.accent) {
   gap: 8px;
 }
 
-.course-heading .course-back {
-  flex: none;
-  width: 44px;
-  padding: 0;
-  border: 1px solid var(--button-outline);
-  font-size: 1.25rem;
-}
-
 .subject-header-actions {
   display: flex;
   flex: none;
@@ -620,7 +612,7 @@ button:not(.primary):not(.accent) {
   text-underline-offset: 0.2em;
 }
 
-.quiz-header button:is(#quiz-close, #picker-close, #subject-close, [aria-label="닫기"]) {
+.quiz-header button:is(#quiz-close, #picker-close, #subject-close, [aria-label="닫기"], .course-back) {
   box-sizing: border-box;
   width: 44px;
   height: 44px;
@@ -631,6 +623,14 @@ button:not(.primary):not(.accent) {
   background: #4b4b4b padding-box;
   color: #fff;
   border-radius: 13px;
+}
+
+.course-back {
+  flex: none;
+}
+
+.course-back:focus-visible {
+  outline-offset: -5px;
 }
 
 .video-options {
