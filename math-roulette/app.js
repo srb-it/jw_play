@@ -68,7 +68,10 @@ const SPIN_TICK_GAIN = 15;
 const LOCAL_URL = "http://localhost:4174";
 const PLACEHOLDER_VIDEO_IDS = ["M7lc1UVf-VE", "dQw4w9WgXcQ", "ysz5S6PUM-U", "aqz-KE-bpKQ", "ScMzIvxBSi4"];
 const SAVED_URLS_KEY = "youtube-roulette-saved-urls";
-const DEFAULT_VIDEO_URL = "https://youtu.be/TqZgk2AQhk8";
+const DEFAULT_VIDEO_URLS = [
+  "https://youtu.be/TqZgk2AQhk8",
+  "https://youtu.be/CS5Ko_Ty4P8",
+].join("\n");
 const FAMILY_API = "https://happy-family-roulette-sync.cloudygerbil.chatgpt.site/api/lists";
 const FAMILY_STORAGE_KEY = "math-roulette-family";
 const FAMILY_CODE_PATTERN = /^[a-f0-9]{32}$/;
@@ -161,7 +164,7 @@ function restoreSavedUrls() {
   const savedUrls = window.localStorage.getItem(SAVED_URLS_KEY);
 
   if (!savedUrls) {
-    urlsTextarea.value = DEFAULT_VIDEO_URL;
+    urlsTextarea.value = DEFAULT_VIDEO_URLS;
     return;
   }
 
