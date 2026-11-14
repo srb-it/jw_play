@@ -617,6 +617,12 @@ function buildQuestions(settings) {
   return questions;
 }
 
+function buildAnswerChoices(answer) {
+  const positions = Math.min(answer, 2) + 1;
+  const first = answer - Math.floor(Math.random() * positions);
+  return [first, first + 1, first + 2];
+}
+
 function showNextQuestion() {
   const addition = subject.operation === "addition";
   const choices = quizQuestions.filter((question) => !recentQuestions.includes(question));
@@ -628,14 +634,7 @@ function showNextQuestion() {
   const operation = operations[subject.operation];
   expectedAnswer = operation.answer(left, right);
   quizEquation.textContent = `${left} ${operation.sign} ${right} = ?`;
-  if (subject.operation === "multiplication") {
-    const choices = new Set([expectedAnswer]);
-    for (let distance = 1; choices.size < 10; distance += 1) {
-      if (expectedAnswer > distance) choices.add(expectedAnswer - distance);
-      if (choices.size < 10) choices.add(expectedAnswer + distance);
-    }
-    renderAnswerButtons([...choices].sort((a, b) => a - b));
-  }
+  renderAnswerButtons(buildAnswerChoices(expectedAnswer));
 }
 
 function renderAnswerButtons(values) {
@@ -660,11 +659,6 @@ function openQuiz(video = null) {
   quizQuestions = buildQuestions(subject);
   const operation = operations[subject.operation];
   document.getElementById("quiz-title").textContent = `${operation.title} 퀴즈`;
-  if (subject.operation !== "multiplication") {
-    const min = subject.operation === "subtraction" ? 0 : 1;
-    const max = Math.max(10, ...quizQuestions.map(([left, right]) => operation.answer(left, right)));
-    renderAnswerButtons(Array.from({ length: max - min + 1 }, (_, index) => min + index));
-  }
   clearQuizResult();
   quizFeedback.textContent = "";
   updateQuizProgress();
