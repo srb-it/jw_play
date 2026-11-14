@@ -695,12 +695,24 @@ button:not(.primary):not(.accent) {
   place-items: center;
   width: 32px;
   height: 32px;
-  padding: 0;
+  padding: 2px 2px 14px 14px;
+  border-radius: 8px;
+  background: transparent;
+  color: #81252b;
+  font-size: .75rem;
+  line-height: 1;
+  isolation: isolate;
+}
+
+#registered-videos .video-remove::before {
+  content: "";
+  position: absolute;
+  inset: 2px 2px auto auto;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #fff;
-  color: #81252b;
-  font-size: 1rem;
-  line-height: 1;
+  z-index: -1;
 }
 
 #registered-videos .video-remove:hover {
