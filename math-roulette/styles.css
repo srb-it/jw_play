@@ -127,8 +127,7 @@ body {
   font-size: .875rem;
 }
 
-.manage-actions,
-.player-actions {
+.manage-actions {
   margin-top: 10px;
 }
 
@@ -352,7 +351,12 @@ button:not(.primary):not(.accent) {
 }
 
 .player-head {
-  margin-bottom: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  margin-bottom: 8px;
 }
 
 .player-meta {
@@ -599,6 +603,10 @@ button:not(.primary):not(.accent) {
   .manage-actions button,
   .player-actions button {
     padding: 8px 6px;
+  }
+
+  .player-actions button {
+    font-size: 0.875rem;
   }
 
   .app {
