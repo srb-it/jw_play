@@ -895,6 +895,14 @@ familyDisconnect.addEventListener("click", () => {
 window.addEventListener("focus", refreshFamily);
 document.addEventListener("visibilitychange", refreshFamily);
 window.setInterval(refreshFamily, 15000);
+const MAX_REGISTERED_VIDEOS = 20;
+
+function registrationIsFull(urls) {
+  if (urls.length < MAX_REGISTERED_VIDEOS) return false;
+  registerStatus.textContent = "영상은 최대 20개까지 등록할 수 있어요. 기존 영상을 삭제한 뒤 추가해 주세요.";
+  return true;
+}
+
 function renderRegisteredVideos() {
   const urls = parseRawUrls(urlsTextarea.value);
   const add = document.createElement("button");
@@ -903,6 +911,8 @@ function renderRegisteredVideos() {
   add.textContent = "+";
   add.setAttribute("aria-label", "새 영상 추가");
   add.addEventListener("click", () => {
+    if (registrationIsFull(parseRawUrls(urlsTextarea.value))) return;
+    registerStatus.textContent = "";
     videoAddForm.hidden = false;
     newVideoUrl.focus();
   });
@@ -953,6 +963,7 @@ videoAddForm.addEventListener("submit", (event) => {
     return;
   }
   const urls = parseRawUrls(urlsTextarea.value);
+  if (registrationIsFull(urls)) return;
   if (urls.some((url) => extractVideoId(url) === id)) {
     registerStatus.textContent = "이미 등록된 영상이에요.";
     return;
