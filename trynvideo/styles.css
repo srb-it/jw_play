@@ -141,6 +141,41 @@ body {
   border: 1px solid var(--button-outline);
 }
 
+.science-topic-card {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--button-outline);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.science-topic-card:has(input:checked) {
+  border-color: #255dab;
+  background: #eef5ff;
+}
+
+.science-topic-choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.science-topic-choice input {
+  accent-color: #255dab;
+}
+
+#constellation-study {
+  min-height: 44px;
+  padding: 0 4px;
+  background: transparent;
+  color: #255dab;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 #constellation-dialog {
   max-height: calc(100dvh - 24px);
 }
