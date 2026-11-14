@@ -137,8 +137,13 @@ body {
   justify-content: center;
 }
 
-#phonics-restart {
-  border: 1px solid var(--button-outline);
+#phonics-actions button {
+  min-width: 64px;
+}
+
+#phonics-incorrect {
+  background: #a52632;
+  color: #fff;
 }
 
 #constellation-study {

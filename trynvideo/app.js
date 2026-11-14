@@ -45,10 +45,12 @@ const COURSE_KEY = "trynvideo-course";
 const studyGuide = document.getElementById("study-guide");
 const mathGuide = studyGuide.textContent;
 const phonicsActions = document.getElementById("phonics-actions");
-const phonicsNext = document.getElementById("phonics-next");
+const phonicsCorrect = document.getElementById("phonics-correct");
+const phonicsIncorrect = document.getElementById("phonics-incorrect");
 let activeCourse = "math";
 let phonicsSettings = { set: "long", vowel: "all" };
 let phonicsDeck = [];
+let phonicsCardIndex = 0;
 let constellationDeck = [];
 let constellationAnswer = "";
 const constellationQuestion = document.getElementById("constellation-question");
@@ -71,7 +73,7 @@ try {
 function selectCourse(course) {
   activeCourse = course;
   studyGuide.textContent = course === "english"
-    ? "영어 단어를 읽고 Next를 룰렛은 5번, 고른 영상은 10번 누르면 재생돼요"
+    ? "영어 읽기에서 룰렛은 연속 O 5번, 고른 영상은 연속 O 10번이면 재생돼요"
     : course === "science" ? `${scienceTopic === "planets" ? "행성 사진을" : "별자리 그림을"} 보고 룰렛은 연속 5번, 고른 영상은 연속 10번 맞춰야 재생돼요` : mathGuide;
   try { localStorage.setItem(COURSE_KEY, course); } catch {}
 }
@@ -631,8 +633,8 @@ function renderAnswerButtons(values) {
 }
 
 function showPhonicsCard() {
-  quizProgress.textContent = `읽은 카드 ${correctStreak} / ${requiredQuizStreak()}`;
-  quizEquation.textContent = phonicsDeck[correctStreak % phonicsDeck.length].join(" / ");
+  updateQuizProgress();
+  quizEquation.textContent = phonicsDeck[phonicsCardIndex % phonicsDeck.length].join(" / ");
 }
 
 function scienceItems(topic) {
@@ -682,18 +684,8 @@ function finishChallenge() {
   }
 }
 
-phonicsNext.addEventListener("click", () => {
-  if (!quiz.open || phonicsActions.hidden) return;
-  correctStreak += 1;
-  if (correctStreak === requiredQuizStreak()) finishChallenge();
-  else showPhonicsCard();
-});
-document.getElementById("phonics-restart").addEventListener("click", () => {
-  if (!quiz.open || phonicsActions.hidden) return;
-  correctStreak = 0;
-  showPhonicsCard();
-  phonicsNext.focus();
-});
+phonicsCorrect.addEventListener("click", () => gradeQuizAnswer(phonicsCorrect, true));
+phonicsIncorrect.addEventListener("click", () => gradeQuizAnswer(phonicsIncorrect, false));
 
 function openQuiz(video = null) {
   if (spinning || quiz.open || (video ? pickButton.disabled : spinButton.disabled)) {
@@ -716,9 +708,10 @@ function openQuiz(video = null) {
     quizEquation.lang = "en";
     const { set, vowel, pattern } = phonicsSettings;
     phonicsDeck = buildPhonicsDeck(set, vowel, pattern, requiredQuizStreak());
+    phonicsCardIndex = 0;
     showPhonicsCard();
     quiz.showModal();
-    phonicsNext.focus();
+    phonicsCorrect.focus();
     return;
   }
   quizEquation.removeAttribute("lang");
@@ -744,12 +737,17 @@ function openQuiz(video = null) {
 }
 
 function checkQuizAnswer(button) {
+  const correct = activeCourse === "science" ? button.value === constellationAnswer : Number(button.value) === expectedAnswer;
+  gradeQuizAnswer(button, correct);
+}
+
+function gradeQuizAnswer(button, correct) {
   if (!quiz.open || quizFeedbackTimer !== null) {
     return;
   }
 
   const science = activeCourse === "science";
-  const correct = science ? button.value === constellationAnswer : Number(button.value) === expectedAnswer;
+  const english = activeCourse === "english";
   correctStreak = correct ? correctStreak + 1 : 0;
   updateQuizProgress();
   quizFeedback.textContent = correct
@@ -768,9 +766,15 @@ function checkQuizAnswer(button) {
     if (correctStreak === requiredQuizStreak()) {
       finishChallenge();
     } else if (correct) {
-      if (science) showConstellationQuestion();
-      else showNextQuestion();
-      quizAnswers.firstElementChild.focus();
+      if (english) {
+        phonicsCardIndex += 1;
+        showPhonicsCard();
+        phonicsCorrect.focus();
+      } else {
+        if (science) showConstellationQuestion();
+        else showNextQuestion();
+        quizAnswers.firstElementChild.focus();
+      }
     } else {
       button.focus();
     }
