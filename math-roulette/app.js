@@ -290,13 +290,33 @@ function replacePlayerFrame(src) {
 
 function playSelectedVideo(videoId, muted = true) {
   const frame = replacePlayerFrame(getPlayerUrl(videoId, muted));
+  let retriedMuted = muted;
   loadYouTubeApi().then((api) => {
     if (playerFrame !== frame) return;
     youtubePlayer = new api.Player(frame.id, {
       events: {
+        onReady(event) {
+          if (playerFrame === frame) event.target.playVideo();
+        },
+        onAutoplayBlocked(event) {
+          if (playerFrame !== frame) return;
+          if (!retriedMuted) {
+            retriedMuted = true;
+            event.target.mute();
+            event.target.playVideo();
+          } else {
+            playbackStatus.textContent = "영상의 재생 버튼을 눌러 주세요.";
+          }
+        },
         onStateChange(event) {
-          if (playerFrame !== frame || event.data !== api.PlayerState.ENDED) return;
-          playbackStatus.textContent = "영상이 끝났어요.";
+          if (playerFrame !== frame) return;
+          if (event.data === api.PlayerState.ENDED) {
+            playbackStatus.textContent = "영상이 끝났어요.";
+          } else if (event.data === api.PlayerState.PLAYING && retriedMuted) {
+            playbackStatus.textContent = event.target.isMuted()
+              ? "무음으로 재생 중이에요. 영상에서 소리를 켤 수 있어요."
+              : "영상 재생 중";
+          }
         },
         onError() {
           if (playerFrame !== frame) return;
@@ -308,15 +328,24 @@ function playSelectedVideo(videoId, muted = true) {
 }
 
 function ensureAudioContext() {
-  if (!audioContext) {
-    audioContext = new window.AudioContext();
-    audioGainNode = audioContext.createGain();
-    audioGainNode.gain.value = 0.16;
-    audioGainNode.connect(audioContext.destination);
-  }
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return false;
+  try {
+    if (!audioContext) {
+      const context = new AudioContext();
+      const gain = context.createGain();
+      gain.gain.value = 0.16;
+      gain.connect(context.destination);
+      audioContext = context;
+      audioGainNode = gain;
+    }
 
-  if (audioContext.state === "suspended") {
-    audioContext.resume();
+    if (audioContext.state === "suspended") {
+      audioContext.resume()?.catch(() => {});
+    }
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -332,7 +361,7 @@ function stopSpinMusic() {
 }
 
 function playTickSound(frequency, duration, type = "square", volume = 0.22) {
-  ensureAudioContext();
+  if (!ensureAudioContext()) return;
 
   const oscillator = audioContext.createOscillator();
   const gainNode = audioContext.createGain();
@@ -360,8 +389,8 @@ function playWinnerChime() {
 }
 
 function startSpinMusic() {
-  ensureAudioContext();
   stopSpinMusic();
+  if (!ensureAudioContext()) return;
 
   const totalDuration = 4300;
   let elapsed = 0;
@@ -456,7 +485,6 @@ function spinRoulette() {
   pickButton.disabled = true;
   registerButton.disabled = true;
   playbackStatus.textContent = "룰렛이 돌아가는 중...";
-  startSpinMusic();
 
   const winnerIndex = Math.floor(Math.random() * videos.length);
   const sequence = buildRouletteSequence();
@@ -478,15 +506,20 @@ function spinRoulette() {
   window.setTimeout(() => {
     const winner = videos[winnerIndex];
     stopSpinMusic();
-    playWinnerChime();
     setWinner(winner);
-    playSelectedVideo(winner.id, false);
     playbackStatus.textContent = `${winner.title} 당첨!`;
     spinning = false;
     spinButton.disabled = false;
     pickButton.disabled = false;
     registerButton.disabled = false;
+    try {
+      playSelectedVideo(winner.id, false);
+    } catch {
+      playbackStatus.textContent = "영상을 재생할 수 없어요.";
+    }
+    playWinnerChime();
   }, 4600);
+  startSpinMusic();
 }
 
 function requiredQuizStreak() {
@@ -522,11 +555,7 @@ function playMalletStrike(start, partials) {
 }
 
 function playQuizResultSound(correct) {
-  if (!window.AudioContext) {
-    return;
-  }
-
-  ensureAudioContext();
+  if (!ensureAudioContext()) return;
   const start = audioContext.currentTime;
   if (correct) {
     playMalletStrike(start, [[784, 0.21, 0.25], [2352, 0.07, 0.1], [4916, 0.025, 0.05]]);
