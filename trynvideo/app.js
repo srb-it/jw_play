@@ -10,6 +10,7 @@ const newVideoUrl = document.getElementById("new-video-url");
 const registerStatus = document.getElementById("register-status");
 const statusText = document.getElementById("status");
 const playbackStatus = document.getElementById("playback-status");
+const playWithSound = document.getElementById("play-with-sound");
 const serverNote = document.getElementById("server-note");
 const rouletteStrip = document.getElementById("roulette-strip");
 let playerFrame = document.getElementById("player-frame");
@@ -317,6 +318,7 @@ function loadYouTubeApi() {
 }
 
 function replacePlayerFrame(src) {
+  playWithSound.hidden = true;
   const parent = playerFrame.parentElement;
   const next = playerFrame.cloneNode(false);
   next.src = src;
@@ -331,31 +333,53 @@ function replacePlayerFrame(src) {
 }
 
 
+playWithSound.addEventListener("click", () => {
+  if (!youtubePlayer) return;
+  playWithSound.hidden = true;
+  youtubePlayer.unMute();
+  youtubePlayer.playVideo();
+  playbackStatus.textContent = "";
+});
+
 function playSelectedVideo(videoId) {
   const frame = replacePlayerFrame(getPlayerUrl(videoId));
+  let triedMuted = false;
   loadYouTubeApi().then((api) => {
     if (playerFrame !== frame) return;
     youtubePlayer = new api.Player(frame.id, {
       events: {
         onReady(event) {
           if (playerFrame !== frame) return;
+          if (triedMuted) return;
           event.target.unMute();
           event.target.playVideo();
         },
         onAutoplayBlocked(event) {
           if (playerFrame !== frame) return;
-          playbackStatus.textContent = "소리와 함께 보려면 영상의 재생 버튼을 눌러 주세요.";
+          playWithSound.hidden = false;
+          if (!triedMuted) {
+            triedMuted = true;
+            playbackStatus.textContent = "무음으로 자동재생을 다시 시도해요.";
+            event.target.mute();
+            event.target.playVideo();
+          } else {
+            playbackStatus.textContent = "재생 버튼을 눌러 주세요.";
+          }
         },
         onStateChange(event) {
           if (playerFrame !== frame) return;
           if (event.data === api.PlayerState.ENDED) {
+            playWithSound.hidden = true;
             playbackStatus.textContent = "영상이 끝났어요.";
           } else if (event.data === api.PlayerState.PLAYING) {
-            playbackStatus.textContent = "영상 재생 중";
+            const muted = event.target.isMuted();
+            playWithSound.hidden = !muted;
+            playbackStatus.textContent = muted ? "영상 재생 중 (무음)" : "영상 재생 중";
           }
         },
         onError() {
           if (playerFrame !== frame) return;
+          playWithSound.hidden = true;
           playbackStatus.textContent = "영상을 재생할 수 없어요.";
         }
       }
