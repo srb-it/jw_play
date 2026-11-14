@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Happy Family, 공부하고 놀기 | 정상부녀</title>
-    <link rel="stylesheet" href="styles.css?v=science-card-1" />
+    <link rel="stylesheet" href="styles.css?v=science-card-2" />
   </head>
   <body>
     <main class="app">
@@ -157,13 +157,13 @@
         <div class="actions"><button type="submit" class="accent">적용</button></div>
       </form>
       <section id="science-settings" hidden>
-        <div class="science-topic-card">
-          <label class="science-topic-choice">
-            <input type="radio" name="science-topic" value="constellations" checked />
-            <span>별자리</span>
-          </label>
+        <fieldset class="subject-options">
+          <legend>주제</legend>
+          <div class="subject-buttons phonics-sets">
+            <label><input type="radio" name="science-topic" value="constellations" checked /><span>별자리</span></label>
+          </div>
           <button id="constellation-study" type="button">별자리 공부하기</button>
-        </div>
+        </fieldset>
         <div class="actions">
           <button id="constellation-select" type="button" class="accent">적용</button>
         </div>
