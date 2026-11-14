@@ -17,9 +17,27 @@
 
       <section class="layout">
         <section class="panel controls">
-          <div id="mobile-play-slot"></div>
-          <button id="link-settings-toggle" type="button" aria-controls="link-settings" aria-expanded="false" hidden>링크 설정</button>
-          <div id="link-settings">
+          <div class="game-toolbar">
+            <div class="play-actions" role="group" aria-label="게임">
+              <button id="spin-button" class="accent" type="button" disabled>룰렛 돌리기</button>
+              <button id="pick-button" type="button" disabled>영상 골라 보기</button>
+            </div>
+            <div class="manage-actions" role="group" aria-label="관리">
+              <button id="load-button" type="button">링크 불러오기</button>
+              <button id="register-button" type="button" aria-haspopup="dialog">영상 등록하기</button>
+              <button type="button" disabled>게임 규칙 설정하기</button>
+              <button id="sync-button" type="button" aria-haspopup="dialog">기기 간 동기화</button>
+            </div>
+          </div>
+          <p id="status" class="status" role="status">유튜브 링크를 두 개 이상 줄바꿈으로 붙여 넣어 주세요.</p>
+          <p id="server-note" class="server-note" hidden></p>
+        </section>
+
+        <dialog id="register-dialog" class="settings-dialog" aria-labelledby="register-title">
+          <header class="quiz-header">
+            <h2 id="register-title">영상 등록하기</h2>
+            <form method="dialog"><button type="submit" aria-label="닫기">&times;</button></form>
+          </header>
             <div class="link-input-head">
               <label for="video-urls">유튜브 링크 붙여넣기</label>
               <button id="save-button" type="button">링크 저장하기</button>
@@ -29,16 +47,13 @@
               placeholder="https://youtu.be/example-1&#10;https://youtu.be/example-2&#10;https://youtu.be/example-3"
             ></textarea>
 
-            <div id="link-actions" class="actions">
-              <button id="load-button" type="button">링크 불러오기</button>
-              <div id="play-actions" class="play-actions">
-                <button id="spin-button" class="accent" type="button" disabled>룰렛 돌리기</button>
-                <button id="pick-button" type="button" disabled>영상 골라 보기</button>
-              </div>
-            </div>
-            <p id="status" class="status" role="status">유튜브 링크를 두 개 이상 줄바꿈으로 붙여 넣어 주세요.</p>
-            <details class="family-sync">
-              <summary>기기 간 동기화</summary>
+          <p id="register-status" class="status" role="status"></p>
+        </dialog>
+        <dialog id="sync-dialog" class="settings-dialog" aria-labelledby="sync-title">
+          <header class="quiz-header">
+            <h2 id="sync-title">기기 간 동기화</h2>
+            <form method="dialog"><button type="submit" aria-label="닫기">&times;</button></form>
+          </header>
               <form id="family-join" class="family-controls">
                 <label for="family-code">가족 코드</label>
                 <input id="family-code" type="text" autocapitalize="off" autocomplete="off" spellcheck="false" />
@@ -52,10 +67,7 @@
                 <button id="family-disconnect" type="button">이 기기 연결 해제</button>
               </div>
               <p id="family-status" class="status" role="status"></p>
-            </details>
-          </div>
-          <p id="server-note" class="server-note" hidden></p>
-        </section>
+        </dialog>
 
         <section class="panel player-panel">
           <div class="player-head">

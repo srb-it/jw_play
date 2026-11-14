@@ -3,11 +3,8 @@ const loadButton = document.getElementById("load-button");
 const spinButton = document.getElementById("spin-button");
 const pickButton = document.getElementById("pick-button");
 const saveButton = document.getElementById("save-button");
-const playActions = document.getElementById("play-actions");
-const mobilePlaySlot = document.getElementById("mobile-play-slot");
-const linkActions = document.getElementById("link-actions");
-const linkSettings = document.getElementById("link-settings");
-const linkSettingsToggle = document.getElementById("link-settings-toggle");
+const registerDialog = document.getElementById("register-dialog");
+const registerStatus = document.getElementById("register-status");
 const mobileLayout = window.matchMedia("(max-width: 720px)");
 const statusText = document.getElementById("status");
 const playbackStatus = document.getElementById("playback-status");
@@ -138,6 +135,7 @@ function parseRawUrls(rawText) {
 
 function updateStatus(message) {
   statusText.textContent = message;
+  if (registerDialog.open) registerStatus.textContent = message;
 }
 
 function saveUrlsToStorage() {
@@ -455,23 +453,6 @@ function loadVideos(preservePlayback = false) {
     playbackStatus.textContent = "";
   }
   updateStatus(`${videos.length}개의 영상을 불러왔어요.`);
-}
-
-function setLinkSettingsExpanded(expanded) {
-  linkSettings.hidden = !expanded;
-  linkSettingsToggle.setAttribute("aria-expanded", String(expanded));
-}
-
-function updateResponsiveControls() {
-  const mobile = mobileLayout.matches;
-  const destination = mobile ? mobilePlaySlot : linkActions;
-  destination.append(playActions);
-  linkSettingsToggle.hidden = !mobile;
-
-  if (mobile && !spinning && !videos.length) {
-    loadVideos();
-  }
-  setLinkSettingsExpanded(!mobile || (spinButton.disabled && !spinning));
 }
 
 function openVideoPicker() {
@@ -808,14 +789,19 @@ familyDisconnect.addEventListener("click", () => {
 window.addEventListener("focus", refreshFamily);
 document.addEventListener("visibilitychange", refreshFamily);
 window.setInterval(refreshFamily, 15000);
-linkSettingsToggle.addEventListener("click", () => setLinkSettingsExpanded(linkSettings.hidden));
-mobileLayout.addEventListener("change", updateResponsiveControls);
+document.getElementById("register-button").addEventListener("click", () => {
+  registerStatus.textContent = "";
+  registerDialog.showModal();
+});
+document.getElementById("sync-button").addEventListener("click", () => {
+  document.getElementById("sync-dialog").showModal();
+});
 updateServerNote();
 redirectToLocalServer();
 setWinner(null);
 restoreSavedUrls();
 restoreFamily();
-updateResponsiveControls();
+if (mobileLayout.matches && !videos.length) loadVideos();
 if (!videos.length) {
   resetRoulettePosition(buildPlaceholderVideos());
 }
