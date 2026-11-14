@@ -137,7 +137,10 @@
       <form method="dialog" id="subject-form">
         <header class="quiz-header">
           <h2 id="subject-title">수학</h2>
-          <button id="subject-reset" type="button">초기화</button>
+          <div class="subject-header-actions">
+            <button id="subject-reset" type="button">초기화</button>
+            <button id="subject-close" type="button" aria-label="수학 설정 닫기">&times;</button>
+          </div>
         </header>
         <fieldset class="subject-options subject-picker">
           <legend>연산</legend>
@@ -175,7 +178,6 @@
         </fieldset>
         <div class="actions">
           <button type="submit" value="save" class="accent">적용</button>
-          <button type="submit" value="cancel">취소</button>
         </div>
       </form>
     </dialog>
@@ -194,6 +196,6 @@
       <p id="quiz-feedback" class="quiz-feedback" role="status"></p>
     </dialog>
 
-    <script src="app.js?v=course-picker-1"></script>
+    <script src="app.js?v=subject-close-1"></script>
   </body>
 </html>

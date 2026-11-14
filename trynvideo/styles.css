@@ -585,6 +585,13 @@ button:not(.primary):not(.accent) {
   display: none;
 }
 
+.subject-header-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+
 #subject-reset {
   flex: none;
   min-height: 44px;
@@ -596,12 +603,14 @@ button:not(.primary):not(.accent) {
   text-underline-offset: 0.2em;
 }
 
-#quiz-close,
-#picker-close {
+.quiz-header button:is(#quiz-close, #picker-close, #subject-close, [aria-label="닫기"]) {
   width: 44px;
   height: 44px;
   padding: 0;
   font-size: 1.5rem;
+  background: #4b4b4b;
+  color: #fff;
+  border-radius: 8px;
 }
 
 .video-options {

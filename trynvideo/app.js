@@ -835,6 +835,7 @@ document.getElementById("math-course").addEventListener("click", () => {
   subjectDialog.showModal();
 });
 document.getElementById("subject-reset").addEventListener("click", () => fillSubjectForm(defaultSubject));
+document.getElementById("subject-close").addEventListener("click", () => subjectDialog.close("cancel"));
 subjectForm.addEventListener("change", showSubjectOptions);
 subjectDialog.addEventListener("close", () => {
   if (subjectDialog.returnValue !== "save") return;
