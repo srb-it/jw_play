@@ -285,9 +285,9 @@ function buildRouletteSequence() {
   return repeated;
 }
 
-function getPlayerUrl(videoId, autoplay = true) {
+function getPlayerUrl(videoId) {
   const embedUrl = new URL(`https://www.youtube.com/embed/${videoId}`);
-  embedUrl.searchParams.set("autoplay", autoplay ? "1" : "0");
+  embedUrl.searchParams.set("autoplay", "1");
   embedUrl.searchParams.set("mute", "0");
   embedUrl.searchParams.set("playsinline", "1");
   embedUrl.searchParams.set("rel", "0");
@@ -316,10 +316,9 @@ function loadYouTubeApi() {
   return youtubeApiLoading;
 }
 
-function replacePlayerFrame(src, conceal = false) {
+function replacePlayerFrame(src) {
   const parent = playerFrame.parentElement;
   const next = playerFrame.cloneNode(false);
-  next.style.visibility = conceal ? "hidden" : "";
   next.src = src;
   if (youtubePlayer) {
     youtubePlayer.destroy();
@@ -332,30 +331,23 @@ function replacePlayerFrame(src, conceal = false) {
 }
 
 
-let preparedReward = null;
-
-function setupRewardPlayer(videoId, autoplay) {
-  const frame = replacePlayerFrame(getPlayerUrl(videoId, autoplay), !autoplay);
-  const reward = { videoId, frame, ready: false, requested: autoplay };
-  preparedReward = reward;
+function playSelectedVideo(videoId) {
+  const frame = replacePlayerFrame(getPlayerUrl(videoId));
   loadYouTubeApi().then((api) => {
     if (playerFrame !== frame) return;
     youtubePlayer = new api.Player(frame.id, {
       events: {
         onReady(event) {
           if (playerFrame !== frame) return;
-          reward.ready = true;
-          if (reward.requested) {
-            event.target.unMute();
-            event.target.playVideo();
-          }
+          event.target.unMute();
+          event.target.playVideo();
         },
         onAutoplayBlocked() {
-          if (playerFrame !== frame || !reward.requested) return;
+          if (playerFrame !== frame) return;
           playbackStatus.textContent = "자동재생이 차단됐어요. 영상의 재생 버튼을 눌러 주세요.";
         },
         onStateChange(event) {
-          if (playerFrame !== frame || !reward.requested) return;
+          if (playerFrame !== frame) return;
           if (event.data === api.PlayerState.ENDED) {
             playbackStatus.textContent = "영상이 끝났어요.";
           } else if (event.data === api.PlayerState.PLAYING) {
@@ -363,24 +355,12 @@ function setupRewardPlayer(videoId, autoplay) {
           }
         },
         onError() {
-          if (playerFrame !== frame || !reward.requested) return;
+          if (playerFrame !== frame) return;
           playbackStatus.textContent = "영상을 재생할 수 없어요.";
         }
       }
     });
   }).catch(() => {});
-}
-
-function playSelectedVideo(videoId) {
-  const reward = preparedReward;
-  if (reward?.videoId === videoId && reward.frame === playerFrame && reward.ready && youtubePlayer) {
-    reward.requested = true;
-    reward.frame.style.visibility = "";
-    youtubePlayer.unMute();
-    youtubePlayer.playVideo();
-  } else {
-    setupRewardPlayer(videoId, true);
-  }
 }
 
 function ensureAudioContext() {
@@ -531,7 +511,7 @@ function openVideoPicker() {
   videoPicker.showModal();
 }
 
-function spinRoulette(winner) {
+function spinRoulette() {
   if (spinning || !videos.length) {
     return;
   }
@@ -541,7 +521,8 @@ function spinRoulette(winner) {
   pickButton.disabled = true;
   registerButton.disabled = true;
   playbackStatus.textContent = "룰렛이 돌아가는 중...";
-  const winnerIndex = videos.indexOf(winner);
+  const winnerIndex = Math.floor(Math.random() * videos.length);
+  const winner = videos[winnerIndex];
   const sequence = buildRouletteSequence();
   resetRoulettePosition(sequence);
 
@@ -704,12 +685,10 @@ function showConstellationQuestion() {
   }));
 }
 
-let quizReward = null;
-
 function finishChallenge() {
   quiz.close();
   if (!quizVideo) {
-    spinRoulette(quizReward);
+    spinRoulette();
     return;
   }
   setWinner(quizVideo);
@@ -736,8 +715,8 @@ function openQuiz(video = null) {
   ensureAudioContext();
   correctStreak = 0;
   quizVideo = video;
-  quizReward = video ?? videos[Math.floor(Math.random() * videos.length)];
-  setupRewardPlayer(quizReward.id, false);
+  if (playerFrame.getAttribute("src") !== "about:blank") replacePlayerFrame("about:blank");
+  loadYouTubeApi().catch(() => {});
   playbackStatus.textContent = "";
   clearQuizResult();
   quizFeedback.textContent = "";
@@ -1078,10 +1057,6 @@ subjectDialog.addEventListener("close", () => {
 });
 quizClose.addEventListener("click", () => quiz.close());
 quiz.addEventListener("close", () => {
-  if (!quiz.open && !spinning && preparedReward?.frame === playerFrame && !preparedReward.requested) {
-    replacePlayerFrame("about:blank");
-    preparedReward = null;
-  }
   if (!quiz.open && quizFeedbackTimer !== null) {
     clearQuizResult();
   }
