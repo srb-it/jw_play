@@ -98,6 +98,68 @@ body {
   flex: none;
 }
 
+.subject-options[hidden],
+.subject-options label[hidden] {
+  display: none;
+}
+
+.subject-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.subject-buttons label {
+  position: relative;
+  cursor: pointer;
+}
+
+.subject-buttons input {
+  position: absolute;
+  opacity: 0;
+}
+
+.subject-buttons span {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.subject-buttons input:checked + span {
+  background: #255dab;
+  color: #fff;
+}
+
+.subject-options input[type="checkbox"] {
+  appearance: none;
+  width: 42px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: radial-gradient(circle at 12px center, white 7px, transparent 8px) #706d69;
+  cursor: pointer;
+}
+
+.subject-options input[type="checkbox"]:checked {
+  background: radial-gradient(circle at 30px center, white 7px, transparent 8px) #16734a;
+}
+
+.subject-buttons input:focus-visible + span,
+.subject-options input[type="checkbox"]:focus-visible {
+  outline: 2px solid #255dab;
+  outline-offset: 2px;
+}
+
+.subject-options input:disabled {
+  opacity: 0.5;
+}
+
 #status:empty {
   margin: 0;
   min-height: 0;

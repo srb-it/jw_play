@@ -120,20 +120,39 @@
     <dialog id="subject-dialog" class="settings-dialog" aria-labelledby="subject-title">
       <form method="dialog" id="subject-form">
         <header class="quiz-header"><h2 id="subject-title">공부 과목 선택</h2></header>
-        <fieldset class="subject-options">
+        <fieldset class="subject-options subject-picker">
           <legend>과목</legend>
-          <label><input type="radio" name="operation" value="addition" checked /> 덧셈</label>
-          <label><input type="radio" name="operation" value="subtraction" /> 뺄셈</label>
+          <div class="subject-buttons">
+            <label><input type="radio" name="operation" value="addition" checked /><span>덧셈</span></label>
+            <label><input type="radio" name="operation" value="subtraction" /><span>뺄셈</span></label>
+            <label><input type="radio" name="operation" value="multiplication" /><span>곱셈</span></label>
+            <label><input type="radio" name="operation" value="division" /><span>나눗셈</span></label>
+          </div>
         </fieldset>
         <fieldset class="subject-options" id="addition-options">
           <legend>덧셈 규칙</legend>
-          <label><input type="checkbox" name="sumTen" checked /> 합이 10 이하</label>
-          <label><input type="checkbox" name="addFive" checked /> 두 수가 각각 5 이하</label>
+          <label><input type="checkbox" role="switch" name="sumTen" checked /> 합이 10 이하</label>
+          <label><input type="checkbox" role="switch" name="addFive" checked /> 두 수가 각각 5 이하</label>
         </fieldset>
         <fieldset class="subject-options" id="subtraction-options" hidden>
           <legend>뺄셈 규칙</legend>
-          <label><input type="checkbox" name="subtractTen" /> 두 수가 각각 10 이하</label>
-          <label><input type="checkbox" name="subtractFive" checked /> 두 수가 각각 5 이하</label>
+          <label><input type="checkbox" role="switch" name="subtractTen" /> 두 수가 각각 10 이하</label>
+          <label><input type="checkbox" role="switch" name="subtractFive" checked /> 두 수가 각각 5 이하</label>
+        </fieldset>
+        <fieldset class="subject-options" id="multiplication-options" hidden>
+          <legend>곱셈 규칙</legend>
+          <label><input type="checkbox" role="switch" name="timesTable" /> 구구단 하기</label>
+          <label id="table-options" hidden>연습할 단
+            <select name="table">
+              <option value="2">2단</option><option value="3">3단</option><option value="4">4단</option><option value="5">5단</option>
+              <option value="6">6단</option><option value="7">7단</option><option value="8">8단</option><option value="9">9단</option>
+            </select>
+          </label>
+          <label><input type="checkbox" role="switch" name="multiplyTen" checked /> 두 수가 각각 10 이하</label>
+        </fieldset>
+        <fieldset class="subject-options" id="division-options" hidden>
+          <legend>나눗셈 규칙</legend>
+          <label><input type="checkbox" role="switch" name="divideTen" checked /> 두 수가 각각 10 이하</label>
         </fieldset>
         <div class="actions">
           <button type="submit" value="save" class="accent">적용</button>

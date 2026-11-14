@@ -47,12 +47,19 @@ const SUBJECT_KEY = "math-roulette-subject";
 const subjectDialog = document.getElementById("subject-dialog");
 const subjectForm = document.getElementById("subject-form");
 const subjectFields = subjectForm.elements;
-const defaultSubject = { operation: "addition", sumTen: true, addFive: true, subtractTen: false, subtractFive: true };
+const operations = {
+  addition: { title: "덧셈", sign: "+", answer: (a, b) => a + b },
+  subtraction: { title: "뺄셈", sign: "\u2212", answer: (a, b) => a - b },
+  multiplication: { title: "곱셈", sign: "\u00d7", answer: (a, b) => a * b },
+  division: { title: "나눗셈", sign: "\u00f7", answer: (a, b) => a / b }
+};
+const defaultSubject = { operation: "addition", sumTen: true, addFive: true, subtractTen: false, subtractFive: true, timesTable: false, table: "2", multiplyTen: true, divideTen: true };
 let subject = { ...defaultSubject };
 try {
   const saved = JSON.parse(localStorage.getItem(SUBJECT_KEY));
-  if (saved?.operation === "addition" || saved?.operation === "subtraction") {
+  if (Object.hasOwn(operations, saved?.operation)) {
     subject.operation = saved.operation;
+    if (/^[2-9]$/.test(saved.table)) subject.table = String(saved.table);
     for (const key of Object.keys(defaultSubject)) {
       if (typeof defaultSubject[key] === "boolean" && typeof saved[key] === "boolean") subject[key] = saved[key];
     }
@@ -586,13 +593,21 @@ function playQuizResultSound(correct) {
 }
 
 function buildQuestions(settings) {
+  if (settings.operation === "multiplication" && settings.timesTable) {
+    return Array.from({ length: 9 }, (_, index) => [Number(settings.table), index + 1]);
+  }
   const addition = settings.operation === "addition";
-  const limit = addition ? (settings.addFive ? 5 : 9) :
-    (settings.subtractFive ? 5 : settings.subtractTen ? 10 : 20);
+  const limit = {
+    addition: settings.addFive ? 5 : 9,
+    subtraction: settings.subtractFive ? 5 : settings.subtractTen ? 10 : 20,
+    multiplication: settings.multiplyTen ? 10 : 20,
+    division: settings.divideTen ? 10 : 20
+  }[settings.operation];
   const questions = [];
   for (let left = 1; left <= limit; left += 1) {
     for (let right = 1; right <= left; right += 1) {
       if (addition && settings.sumTen && left + right > 10) continue;
+      if (settings.operation === "division" && left % right !== 0) continue;
       questions.push([left, right]);
     }
   }
@@ -603,10 +618,31 @@ function showNextQuestion() {
   const addition = subject.operation === "addition";
   const choices = quizQuestions.filter((question) => !recentQuestions.includes(question));
   const question = choices[Math.floor(Math.random() * choices.length)];
-  recentQuestions = [...recentQuestions, question].slice(1 - requiredQuizStreak());
-  const [left, right] = addition && Math.random() < 0.5 ? [...question].reverse() : question;
-  expectedAnswer = addition ? left + right : left - right;
-  quizEquation.textContent = `${left} ${addition ? "+" : "\u2212"} ${right} = ?`;
+  const historySize = Math.min(requiredQuizStreak(), quizQuestions.length) - 1;
+  recentQuestions = [...recentQuestions, question].slice(-historySize);
+  const canSwap = addition || (subject.operation === "multiplication" && !subject.timesTable);
+  const [left, right] = canSwap && Math.random() < 0.5 ? [...question].reverse() : question;
+  const operation = operations[subject.operation];
+  expectedAnswer = operation.answer(left, right);
+  quizEquation.textContent = `${left} ${operation.sign} ${right} = ?`;
+  if (subject.operation === "multiplication") {
+    const choices = new Set([expectedAnswer]);
+    for (let distance = 1; choices.size < 10; distance += 1) {
+      if (expectedAnswer > distance) choices.add(expectedAnswer - distance);
+      if (choices.size < 10) choices.add(expectedAnswer + distance);
+    }
+    renderAnswerButtons([...choices].sort((a, b) => a - b));
+  }
+}
+
+function renderAnswerButtons(values) {
+  quizAnswers.replaceChildren(...values.map((value) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.value = button.textContent = String(value);
+    button.addEventListener("click", () => checkQuizAnswer(button));
+    return button;
+  }));
 }
 
 function openQuiz(video = null) {
@@ -619,19 +655,13 @@ function openQuiz(video = null) {
   loadYouTubeApi().catch(() => {});
   recentQuestions = [];
   quizQuestions = buildQuestions(subject);
-  const addition = subject.operation === "addition";
-  document.getElementById("quiz-title").textContent = addition ? "덧셈 퀴즈" : "뺄셈 퀴즈";
-  const min = addition ? 1 : 0;
-  const max = Math.max(10, ...quizQuestions.map(([left, right]) => addition ? left + right : left - right));
-  const buttons = [];
-  for (let value = min; value <= max; value += 1) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.value = button.textContent = String(value);
-    button.addEventListener("click", () => checkQuizAnswer(button));
-    buttons.push(button);
+  const operation = operations[subject.operation];
+  document.getElementById("quiz-title").textContent = `${operation.title} 퀴즈`;
+  if (subject.operation !== "multiplication") {
+    const min = subject.operation === "subtraction" ? 0 : 1;
+    const max = Math.max(10, ...quizQuestions.map(([left, right]) => operation.answer(left, right)));
+    renderAnswerButtons(Array.from({ length: max - min + 1 }, (_, index) => min + index));
   }
-  quizAnswers.replaceChildren(...buttons);
   clearQuizResult();
   quizFeedback.textContent = "";
   updateQuizProgress();
@@ -797,17 +827,20 @@ spinButton.addEventListener("click", () => openQuiz());
 pickButton.addEventListener("click", openVideoPicker);
 pickerClose.addEventListener("click", () => videoPicker.close());
 function showSubjectOptions() {
-  const addition = subjectFields.operation.value === "addition";
-  document.getElementById("addition-options").hidden = !addition;
-  document.getElementById("subtraction-options").hidden = addition;
+  for (const operation of Object.keys(operations)) {
+    document.getElementById(`${operation}-options`).hidden = subjectFields.operation.value !== operation;
+  }
+  document.getElementById("table-options").hidden = !subjectFields.timesTable.checked;
+  subjectFields.multiplyTen.disabled = subjectFields.timesTable.checked;
 }
 
 document.getElementById("subject-button").addEventListener("click", () => {
   subjectDialog.returnValue = "";
   subjectFields.operation.value = subject.operation;
   for (const key of Object.keys(defaultSubject)) {
-    if (key !== "operation") subjectFields[key].checked = subject[key];
+    if (typeof defaultSubject[key] === "boolean") subjectFields[key].checked = subject[key];
   }
+  subjectFields.table.value = subject.table;
   showSubjectOptions();
   subjectDialog.showModal();
 });
@@ -816,8 +849,9 @@ subjectDialog.addEventListener("close", () => {
   if (subjectDialog.returnValue !== "save") return;
   subject.operation = subjectFields.operation.value;
   for (const key of Object.keys(defaultSubject)) {
-    if (key !== "operation") subject[key] = subjectFields[key].checked;
+    if (typeof defaultSubject[key] === "boolean") subject[key] = subjectFields[key].checked;
   }
+  subject.table = subjectFields.table.value;
   try { localStorage.setItem(SUBJECT_KEY, JSON.stringify(subject)); } catch {}
 });
 quizClose.addEventListener("click", () => quiz.close());
