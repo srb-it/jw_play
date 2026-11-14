@@ -137,7 +137,7 @@ body {
 
 .subject-options input[type="checkbox"] {
   appearance: none;
-  width: 42px;
+  width: 58px;
   height: 24px;
   padding: 0;
   border: 0;
@@ -147,7 +147,7 @@ body {
 }
 
 .subject-options input[type="checkbox"]:checked {
-  background: radial-gradient(circle at 30px center, white 7px, transparent 8px) #16734a;
+  background: radial-gradient(circle at 46px center, white 7px, transparent 8px) #16734a;
 }
 
 .subject-buttons input:focus-visible + span,
@@ -216,12 +216,20 @@ body {
 }
 
 .switch-state {
-  flex: none;
-  min-width: 3ch;
-  margin-inline-start: auto;
-  color: var(--muted);
-  font-size: .8rem;
+  position: absolute;
+  inset-inline-start: 23px;
+  color: #fff;
+  font-size: .625rem;
   font-weight: 800;
+  pointer-events: none;
+}
+
+.subject-options label:has(> .switch-state) {
+  position: relative;
+}
+
+.subject-options input:checked + .switch-state {
+  inset-inline-start: 9px;
 }
 
 .switch-state span:last-child,
@@ -231,7 +239,6 @@ body {
 
 .subject-options input:checked ~ .switch-state span:last-child {
   display: inline;
-  color: #16734a;
 }
 
 .manage-actions {
