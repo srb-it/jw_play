@@ -611,13 +611,16 @@ button:not(.primary):not(.accent) {
 }
 
 .quiz-header button:is(#quiz-close, #picker-close, #subject-close, [aria-label="닫기"]) {
+  box-sizing: border-box;
   width: 44px;
   height: 44px;
   padding: 0;
-  font-size: 1.5rem;
-  background: #4b4b4b;
+  font-size: 1rem;
+  line-height: 1;
+  border: 7px solid transparent;
+  background: #4b4b4b padding-box;
   color: #fff;
-  border-radius: 8px;
+  border-radius: 13px;
 }
 
 .video-options {
