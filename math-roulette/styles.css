@@ -629,6 +629,47 @@ button:not(.primary):not(.accent) {
   padding: 8px;
 }
 
+#registered-videos {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 116px), 1fr));
+}
+
+#registered-videos .video-add-tile {
+  display: grid;
+  place-items: center;
+  min-height: 88px;
+  border: 2px dashed #255dab;
+  border-radius: 8px;
+  color: #255dab;
+  font-size: 2rem;
+}
+
+.registered-video {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.registered-video span {
+  display: block;
+}
+
+.registered-video .video-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: #fff;
+  color: #81252b;
+  font-size: 1.35rem;
+}
+
+#video-add-form {
+  margin-top: 12px;
+}
+
 .quiz-progress {
   margin: 4px 0 16px;
   color: var(--muted);

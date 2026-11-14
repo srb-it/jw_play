@@ -36,14 +36,14 @@
             <h2 id="register-title">영상 등록하기</h2>
             <form method="dialog"><button type="submit" aria-label="닫기">&times;</button></form>
           </header>
-            <div class="link-input-head">
-              <label for="video-urls">유튜브 링크 붙여넣기</label>
-              <button id="save-button" type="button">링크 저장하기</button>
-            </div>
-            <textarea
-              id="video-urls"
-              placeholder="https://youtu.be/example-1&#10;https://youtu.be/example-2&#10;https://youtu.be/example-3"
-            ></textarea>
+          <input id="video-urls" type="hidden" />
+          <div id="registered-videos" class="video-options"></div>
+          <form id="video-add-form" hidden>
+            <label for="new-video-url">유튜브 영상 URL</label>
+            <input id="new-video-url" type="url" required placeholder="https://youtu.be/..." />
+            <div class="actions"><button type="submit" class="accent">추가</button><button id="cancel-video-add" type="button">취소</button></div>
+          </form>
+          <div class="actions"><button id="save-button" type="button">링크 저장하기</button></div>
 
           <p id="register-status" class="status" role="status"></p>
         </dialog>

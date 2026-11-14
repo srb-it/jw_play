@@ -4,6 +4,9 @@ const spinButton = document.getElementById("spin-button");
 const pickButton = document.getElementById("pick-button");
 const saveButton = document.getElementById("save-button");
 const registerDialog = document.getElementById("register-dialog");
+const registeredVideos = document.getElementById("registered-videos");
+const videoAddForm = document.getElementById("video-add-form");
+const newVideoUrl = document.getElementById("new-video-url");
 const registerStatus = document.getElementById("register-status");
 const mobileLayout = window.matchMedia("(max-width: 720px)");
 const statusText = document.getElementById("status");
@@ -750,7 +753,10 @@ function updateFamilyList(code, videoIds, replaceInput) {
   familyReloadPending = familyReloadPending || urls !== family?.urls;
   family = { code, urls };
   window.localStorage.setItem(FAMILY_STORAGE_KEY, JSON.stringify(family));
-  if (replaceInput) urlsTextarea.value = urls;
+  if (replaceInput && urlsTextarea.value !== urls) {
+    urlsTextarea.value = urls;
+    if (registerDialog.open) renderRegisteredVideos();
+  }
   if (familyReloadPending && urlsTextarea.value === urls && !spinning && !quiz.open && !videoPicker.open) {
     loadVideos(true);
     familyReloadPending = false;
@@ -889,7 +895,78 @@ familyDisconnect.addEventListener("click", () => {
 window.addEventListener("focus", refreshFamily);
 document.addEventListener("visibilitychange", refreshFamily);
 window.setInterval(refreshFamily, 15000);
+function renderRegisteredVideos() {
+  const urls = parseRawUrls(urlsTextarea.value);
+  const add = document.createElement("button");
+  add.type = "button";
+  add.className = "video-add-tile";
+  add.textContent = "+";
+  add.setAttribute("aria-label", "새 영상 추가");
+  add.addEventListener("click", () => {
+    videoAddForm.hidden = false;
+    newVideoUrl.focus();
+  });
+  registeredVideos.replaceChildren(add);
+  urls.forEach((url, index) => {
+    const id = sanitizeVideoId(extractVideoId(url));
+    const card = document.createElement("article");
+    card.className = "registered-video";
+    const title = document.createElement("span");
+    title.textContent = `영상 ${index + 1}`;
+    if (id) {
+      const thumbnail = document.createElement("img");
+      thumbnail.src = buildVideoModel(id, index).thumbnail;
+      thumbnail.alt = "";
+      thumbnail.loading = "lazy";
+      card.append(thumbnail);
+    }
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "video-remove";
+    remove.textContent = "\u00d7";
+    remove.setAttribute("aria-label", `영상 ${index + 1} 삭제`);
+    remove.addEventListener("click", () => {
+      urls.splice(index, 1);
+      urlsTextarea.value = urls.join("\n");
+      renderRegisteredVideos();
+      registeredVideos.querySelectorAll(".video-remove")[index]?.focus();
+      if (!registeredVideos.contains(document.activeElement)) registeredVideos.firstElementChild.focus();
+      registerStatus.textContent = "영상이 목록에서 빠졌어요. 링크 저장하기를 누르면 저장돼요.";
+    });
+    card.append(title, remove);
+    registeredVideos.append(card);
+  });
+}
+
+function closeVideoAdd() {
+  videoAddForm.reset();
+  videoAddForm.hidden = true;
+  registeredVideos.firstElementChild.focus();
+}
+
+videoAddForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const id = sanitizeVideoId(extractVideoId(newVideoUrl.value));
+  if (!id) {
+    registerStatus.textContent = "유튜브 영상 링크를 확인해 주세요.";
+    newVideoUrl.focus();
+    return;
+  }
+  const urls = parseRawUrls(urlsTextarea.value);
+  if (urls.some((url) => extractVideoId(url) === id)) {
+    registerStatus.textContent = "이미 등록된 영상이에요.";
+    return;
+  }
+  urlsTextarea.value = [...urls, `https://youtu.be/${id}`].join("\n");
+  renderRegisteredVideos();
+  closeVideoAdd();
+  registerStatus.textContent = "영상을 추가했어요. 링크 저장하기를 누르면 저장돼요.";
+});
+document.getElementById("cancel-video-add").addEventListener("click", closeVideoAdd);
 document.getElementById("register-button").addEventListener("click", () => {
+  videoAddForm.reset();
+  videoAddForm.hidden = true;
+  renderRegisteredVideos();
   registerStatus.textContent = "";
   registerDialog.showModal();
 });
