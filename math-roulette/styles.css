@@ -77,6 +77,27 @@ body {
   line-height: 1.5;
 }
 
+.subject-options {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.subject-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.subject-options input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  flex: none;
+}
+
 #status:empty {
   margin: 0;
   min-height: 0;

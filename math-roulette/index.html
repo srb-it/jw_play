@@ -21,7 +21,7 @@
           <details class="game-settings">
             <summary><span>게임 설정</span><span id="video-count" role="status" hidden></span></summary>
             <div class="manage-actions" role="group" aria-label="관리">
-              <button type="button" disabled>공부 과목 선택</button>
+              <button id="subject-button" type="button" aria-haspopup="dialog">공부 과목 선택</button>
               <button id="load-button" type="button">링크 불러오기</button>
               <button id="register-button" type="button" aria-haspopup="dialog">영상 등록하기</button>
               <button id="sync-button" type="button" aria-haspopup="dialog">기기 간 동기화</button>
@@ -117,6 +117,31 @@
       <div id="video-options" class="video-options"></div>
     </dialog>
 
+    <dialog id="subject-dialog" class="settings-dialog" aria-labelledby="subject-title">
+      <form method="dialog" id="subject-form">
+        <header class="quiz-header"><h2 id="subject-title">공부 과목 선택</h2></header>
+        <fieldset class="subject-options">
+          <legend>과목</legend>
+          <label><input type="radio" name="operation" value="addition" checked /> 덧셈</label>
+          <label><input type="radio" name="operation" value="subtraction" /> 뺄셈</label>
+        </fieldset>
+        <fieldset class="subject-options" id="addition-options">
+          <legend>덧셈 규칙</legend>
+          <label><input type="checkbox" name="sumTen" checked /> 합이 10 이하</label>
+          <label><input type="checkbox" name="addFive" checked /> 두 수가 각각 5 이하</label>
+        </fieldset>
+        <fieldset class="subject-options" id="subtraction-options" hidden>
+          <legend>뺄셈 규칙</legend>
+          <label><input type="checkbox" name="subtractTen" /> 두 수가 각각 10 이하</label>
+          <label><input type="checkbox" name="subtractFive" checked /> 두 수가 각각 5 이하</label>
+        </fieldset>
+        <div class="actions">
+          <button type="submit" value="save" class="accent">적용</button>
+          <button type="submit" value="cancel">취소</button>
+        </div>
+      </form>
+    </dialog>
+
     <dialog id="math-quiz" aria-labelledby="quiz-title">
       <header class="quiz-header">
         <h2 id="quiz-title">덧셈 퀴즈</h2>
@@ -127,18 +152,7 @@
         <p id="quiz-equation"></p>
         <span id="quiz-mark" class="quiz-mark" aria-hidden="true" hidden></span>
       </div>
-      <fieldset id="quiz-answers" class="quiz-answers" aria-labelledby="quiz-equation">
-        <button type="button" value="1" autofocus>1</button>
-        <button type="button" value="2">2</button>
-        <button type="button" value="3">3</button>
-        <button type="button" value="4">4</button>
-        <button type="button" value="5">5</button>
-        <button type="button" value="6">6</button>
-        <button type="button" value="7">7</button>
-        <button type="button" value="8">8</button>
-        <button type="button" value="9">9</button>
-        <button type="button" value="10">10</button>
-      </fieldset>
+      <fieldset id="quiz-answers" class="quiz-answers" aria-labelledby="quiz-equation"></fieldset>
       <p id="quiz-feedback" class="quiz-feedback" role="status"></p>
     </dialog>
 

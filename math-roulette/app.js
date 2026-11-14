@@ -43,13 +43,25 @@ let nativeFullscreenRequest = null;
 let previousWatchFocus = null;
 const ROULETTE_STREAK = 5;
 const PICKED_VIDEO_STREAK = 10;
-const MAX_ADDEND = 5;
+const SUBJECT_KEY = "math-roulette-subject";
+const subjectDialog = document.getElementById("subject-dialog");
+const subjectForm = document.getElementById("subject-form");
+const subjectFields = subjectForm.elements;
+const defaultSubject = { operation: "addition", sumTen: true, addFive: true, subtractTen: false, subtractFive: true };
+let subject = { ...defaultSubject };
+try {
+  const saved = JSON.parse(localStorage.getItem(SUBJECT_KEY));
+  if (saved?.operation === "addition" || saved?.operation === "subtraction") {
+    subject.operation = saved.operation;
+    for (const key of Object.keys(defaultSubject)) {
+      if (typeof defaultSubject[key] === "boolean" && typeof saved[key] === "boolean") subject[key] = saved[key];
+    }
+  }
+} catch {}
+let quizQuestions = [];
 const QUIZ_FEEDBACK_DURATION = 1000;
 const QUIZ_MALLET_GAIN = 3;
 const SPIN_TICK_GAIN = 15;
-const ADDITION_QUESTIONS = Array.from({ length: MAX_ADDEND }, (_, index) =>
-  Array.from({ length: index + 1 }, (_, other) => [index + 1, other + 1])
-).flat();
 const LOCAL_URL = "http://localhost:4174";
 const PLACEHOLDER_VIDEO_IDS = ["M7lc1UVf-VE", "dQw4w9WgXcQ", "ysz5S6PUM-U", "aqz-KE-bpKQ", "ScMzIvxBSi4"];
 const SAVED_URLS_KEY = "youtube-roulette-saved-urls";
@@ -573,13 +585,28 @@ function playQuizResultSound(correct) {
   }
 }
 
+function buildQuestions(settings) {
+  const addition = settings.operation === "addition";
+  const limit = addition ? (settings.addFive ? 5 : 9) :
+    (settings.subtractFive ? 5 : settings.subtractTen ? 10 : 20);
+  const questions = [];
+  for (let left = 1; left <= limit; left += 1) {
+    for (let right = 1; right <= left; right += 1) {
+      if (addition && settings.sumTen && left + right > 10) continue;
+      questions.push([left, right]);
+    }
+  }
+  return questions;
+}
+
 function showNextQuestion() {
-  const choices = ADDITION_QUESTIONS.filter((question) => !recentQuestions.includes(question));
+  const addition = subject.operation === "addition";
+  const choices = quizQuestions.filter((question) => !recentQuestions.includes(question));
   const question = choices[Math.floor(Math.random() * choices.length)];
   recentQuestions = [...recentQuestions, question].slice(1 - requiredQuizStreak());
-  const [left, right] = Math.random() < 0.5 ? question : [...question].reverse();
-  expectedAnswer = left + right;
-  quizEquation.textContent = `${left} + ${right} = ?`;
+  const [left, right] = addition && Math.random() < 0.5 ? [...question].reverse() : question;
+  expectedAnswer = addition ? left + right : left - right;
+  quizEquation.textContent = `${left} ${addition ? "+" : "\u2212"} ${right} = ?`;
 }
 
 function openQuiz(video = null) {
@@ -591,11 +618,26 @@ function openQuiz(video = null) {
   quizVideo = video;
   loadYouTubeApi().catch(() => {});
   recentQuestions = [];
+  quizQuestions = buildQuestions(subject);
+  const addition = subject.operation === "addition";
+  document.getElementById("quiz-title").textContent = addition ? "덧셈 퀴즈" : "뺄셈 퀴즈";
+  const min = addition ? 1 : 0;
+  const max = Math.max(10, ...quizQuestions.map(([left, right]) => addition ? left + right : left - right));
+  const buttons = [];
+  for (let value = min; value <= max; value += 1) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.value = button.textContent = String(value);
+    button.addEventListener("click", () => checkQuizAnswer(button));
+    buttons.push(button);
+  }
+  quizAnswers.replaceChildren(...buttons);
   clearQuizResult();
   quizFeedback.textContent = "";
   updateQuizProgress();
   showNextQuestion();
   quiz.showModal();
+  quizAnswers.firstElementChild.focus();
 }
 
 function checkQuizAnswer(button) {
@@ -754,9 +796,30 @@ loadButton.addEventListener("click", () => loadVideos());
 spinButton.addEventListener("click", () => openQuiz());
 pickButton.addEventListener("click", openVideoPicker);
 pickerClose.addEventListener("click", () => videoPicker.close());
-for (const button of quizAnswers.querySelectorAll("button")) {
-  button.addEventListener("click", () => checkQuizAnswer(button));
+function showSubjectOptions() {
+  const addition = subjectFields.operation.value === "addition";
+  document.getElementById("addition-options").hidden = !addition;
+  document.getElementById("subtraction-options").hidden = addition;
 }
+
+document.getElementById("subject-button").addEventListener("click", () => {
+  subjectDialog.returnValue = "";
+  subjectFields.operation.value = subject.operation;
+  for (const key of Object.keys(defaultSubject)) {
+    if (key !== "operation") subjectFields[key].checked = subject[key];
+  }
+  showSubjectOptions();
+  subjectDialog.showModal();
+});
+subjectForm.addEventListener("change", showSubjectOptions);
+subjectDialog.addEventListener("close", () => {
+  if (subjectDialog.returnValue !== "save") return;
+  subject.operation = subjectFields.operation.value;
+  for (const key of Object.keys(defaultSubject)) {
+    if (key !== "operation") subject[key] = subjectFields[key].checked;
+  }
+  try { localStorage.setItem(SUBJECT_KEY, JSON.stringify(subject)); } catch {}
+});
 quizClose.addEventListener("click", () => quiz.close());
 quiz.addEventListener("close", () => {
   if (!quiz.open && quizFeedbackTimer !== null) {
