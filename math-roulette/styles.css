@@ -204,10 +204,34 @@ body {
   font-weight: 800;
 }
 
+.settings-hint,
 #video-count {
-  margin-inline-start: 12px;
   color: var(--muted);
   font-size: .875rem;
+}
+
+.settings-hint {
+  margin-inline-start: 8px;
+  font-weight: 400;
+}
+
+.switch-state {
+  flex: none;
+  min-width: 3ch;
+  margin-inline-start: auto;
+  color: var(--muted);
+  font-size: .8rem;
+  font-weight: 800;
+}
+
+.switch-state span:last-child,
+.subject-options input:checked ~ .switch-state span:first-child {
+  display: none;
+}
+
+.subject-options input:checked ~ .switch-state span:last-child {
+  display: inline;
+  color: #16734a;
 }
 
 .manage-actions {
@@ -456,12 +480,6 @@ button:not(.primary):not(.accent) {
   color: #166543;
   font-size: 0.9rem;
   font-weight: 800;
-}
-
-.player-title {
-  margin: 0;
-  font-size: 1.15rem;
-  line-height: 1.05;
 }
 
 .player-wrap {

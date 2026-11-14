@@ -19,7 +19,7 @@
       <section class="layout">
         <section class="panel controls">
           <details class="game-settings">
-            <summary><span>게임 설정</span><span id="video-count" role="status" hidden></span></summary>
+            <summary><span>게임 설정</span> <span class="settings-hint">공부과목, 영상관리, 기기간 동기화를 할 수 있어요</span></summary>
             <div class="manage-actions" role="group" aria-label="관리">
               <button id="subject-button" type="button" aria-haspopup="dialog">공부 과목 선택</button>
               <button id="load-button" type="button">링크 불러오기</button>
@@ -72,9 +72,9 @@
             <div>
               <div class="player-meta">
                 <p class="winner-label">Now Playing</p>
+                <span id="video-count" role="status" hidden></span>
                 <p id="playback-status" class="playback-status" role="status"></p>
               </div>
-              <h2 class="player-title">영상 플레이어</h2>
             </div>
             <div class="play-actions player-actions" role="group" aria-label="게임">
               <button id="spin-button" class="accent" type="button" disabled>룰렛 돌리기</button>
@@ -131,28 +131,28 @@
         </fieldset>
         <fieldset class="subject-options" id="addition-options">
           <legend>덧셈 규칙</legend>
-          <label><input type="checkbox" role="switch" name="sumTen" checked /> 합이 10 이하</label>
-          <label><input type="checkbox" role="switch" name="addFive" checked /> 두 수가 각각 5 이하</label>
+          <label><input type="checkbox" role="switch" name="sumTen" checked /> 합이 10 이하 <span class="switch-state" aria-hidden="true"><span>OFF</span><span>ON</span></span></label>
+          <label><input type="checkbox" role="switch" name="addFive" checked /> 두 수가 각각 5 이하 <span class="switch-state" aria-hidden="true"><span>OFF</span><span>ON</span></span></label>
         </fieldset>
         <fieldset class="subject-options" id="subtraction-options" hidden>
           <legend>뺄셈 규칙</legend>
-          <label><input type="checkbox" role="switch" name="subtractTen" /> 두 수가 각각 10 이하</label>
-          <label><input type="checkbox" role="switch" name="subtractFive" checked /> 두 수가 각각 5 이하</label>
+          <label><input type="checkbox" role="switch" name="subtractTen" /> 두 수가 각각 10 이하 <span class="switch-state" aria-hidden="true"><span>OFF</span><span>ON</span></span></label>
+          <label><input type="checkbox" role="switch" name="subtractFive" checked /> 두 수가 각각 5 이하 <span class="switch-state" aria-hidden="true"><span>OFF</span><span>ON</span></span></label>
         </fieldset>
         <fieldset class="subject-options" id="multiplication-options" hidden>
           <legend>곱셈 규칙</legend>
-          <label><input type="checkbox" role="switch" name="timesTable" /> 구구단 하기</label>
+          <label><input type="checkbox" role="switch" name="timesTable" /> 구구단 하기 <span class="switch-state" aria-hidden="true"><span>OFF</span><span>ON</span></span></label>
           <label id="table-options" hidden>연습할 단
             <select name="table">
               <option value="2">2단</option><option value="3">3단</option><option value="4">4단</option><option value="5">5단</option>
               <option value="6">6단</option><option value="7">7단</option><option value="8">8단</option><option value="9">9단</option>
             </select>
           </label>
-          <label><input type="checkbox" role="switch" name="multiplyTen" checked /> 두 수가 각각 10 이하</label>
+          <label><input type="checkbox" role="switch" name="multiplyTen" checked /> 두 수가 각각 10 이하 <span class="switch-state" aria-hidden="true"><span>OFF</span><span>ON</span></span></label>
         </fieldset>
         <fieldset class="subject-options" id="division-options" hidden>
           <legend>나눗셈 규칙</legend>
-          <label><input type="checkbox" role="switch" name="divideTen" checked /> 두 수가 각각 10 이하</label>
+          <label><input type="checkbox" role="switch" name="divideTen" checked /> 두 수가 각각 10 이하 <span class="switch-state" aria-hidden="true"><span>OFF</span><span>ON</span></span></label>
         </fieldset>
         <div class="actions">
           <button type="submit" value="save" class="accent">적용</button>
