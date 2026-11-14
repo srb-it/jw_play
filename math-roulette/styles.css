@@ -629,8 +629,28 @@ button:not(.primary):not(.accent) {
   padding: 8px;
 }
 
+#register-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 24px);
+  padding: 12px;
+}
+
 #registered-videos {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 116px), 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: max-content;
+  gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+#register-dialog > :not(#registered-videos) {
+  flex-shrink: 0;
+}
+
+#register-status:empty {
+  display: none;
 }
 
 #registered-videos .video-add-tile {
@@ -652,18 +672,37 @@ button:not(.primary):not(.accent) {
 
 .registered-video span {
   display: block;
+  font-size: .875rem;
 }
 
-.registered-video .video-remove {
+#registered-videos .video-remove {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 44px;
-  height: 44px;
-  padding: 0;
+  top: 0;
+  right: 0;
+  display: grid;
+  place-items: start end;
+  width: 32px;
+  height: 32px;
+  padding: 3px 3px 0 0;
+  border-radius: 6px;
+  background: transparent;
+  color: transparent;
+}
+
+#registered-videos .video-remove::after {
+  content: "\\00d7";
+  grid-area: 1 / 1;
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
   background: #fff;
   color: #81252b;
-  font-size: 1.35rem;
+  font-size: 1rem;
 }
 
 #video-add-form {
