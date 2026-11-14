@@ -8,7 +8,6 @@ const registeredVideos = document.getElementById("registered-videos");
 const videoAddForm = document.getElementById("video-add-form");
 const newVideoUrl = document.getElementById("new-video-url");
 const registerStatus = document.getElementById("register-status");
-const mobileLayout = window.matchMedia("(max-width: 720px)");
 const statusText = document.getElementById("status");
 const playbackStatus = document.getElementById("playback-status");
 const serverNote = document.getElementById("server-note");
@@ -69,15 +68,7 @@ const SPIN_TICK_GAIN = 15;
 const LOCAL_URL = "http://localhost:4174";
 const PLACEHOLDER_VIDEO_IDS = ["M7lc1UVf-VE", "dQw4w9WgXcQ", "ysz5S6PUM-U", "aqz-KE-bpKQ", "ScMzIvxBSi4"];
 const SAVED_URLS_KEY = "youtube-roulette-saved-urls";
-const DEFAULT_URLS = [
-  "https://youtu.be/TqZgk2AQhk8?si=tixolOy-5ZuCiZ1N",
-  "https://youtu.be/CS5Ko_Ty4P8?si=5B_mN1Y6awdVWNeC",
-  "https://youtu.be/43BVARn7r0o?si=F4ngldZu9Mi-hTIb",
-  "https://youtu.be/fpfWIWB5904?si=EfJUZtDxo9Fl3UVS",
-  "https://youtu.be/syBo0IjgJlM?si=QPwsWHj1zJ_Lt7Sb",
-  "https://youtu.be/HUMYQ-4sc6g?si=pL1SJCV6V8X7lZo-",
-  "https://youtu.be/Nn_d3vdwpJ8?si=9klwSwIezdhOuF7B",
-].join("\n");
+const DEFAULT_VIDEO_URL = "https://youtu.be/TqZgk2AQhk8";
 const FAMILY_API = "https://happy-family-roulette-sync.cloudygerbil.chatgpt.site/api/lists";
 const FAMILY_STORAGE_KEY = "math-roulette-family";
 const FAMILY_CODE_PATTERN = /^[a-f0-9]{32}$/;
@@ -170,8 +161,7 @@ function restoreSavedUrls() {
   const savedUrls = window.localStorage.getItem(SAVED_URLS_KEY);
 
   if (!savedUrls) {
-    urlsTextarea.value = DEFAULT_URLS;
-    updateStatus("기본 티니핑 링크를 채워뒀어요. 링크 불러오기를 눌러 주세요.");
+    urlsTextarea.value = DEFAULT_VIDEO_URL;
     return;
   }
 
@@ -407,8 +397,8 @@ function loadVideos(preservePlayback = false) {
     return;
   }
 
-  if (parsed.length < 2) {
-    updateStatus("유튜브 링크를 두 개 이상 붙여 넣어 주세요.");
+  if (!parsed.length) {
+    updateStatus("유튜브 링크를 한 개 이상 등록해 주세요.");
     spinButton.disabled = true;
     pickButton.disabled = true;
     return;
@@ -418,7 +408,7 @@ function loadVideos(preservePlayback = false) {
   const videoCount = document.getElementById("video-count");
   videoCount.textContent = `불러온 영상 ${videos.length}개`;
   videoCount.hidden = false;
-  resetRoulettePosition(buildRouletteSequence());
+  resetRoulettePosition(videos.length === 1 ? videos : buildRouletteSequence());
   spinButton.disabled = false;
   pickButton.disabled = false;
   if (!preservePlayback) {
@@ -454,7 +444,7 @@ function openVideoPicker() {
 }
 
 function spinRoulette() {
-  if (spinning || videos.length < 2) {
+  if (spinning || !videos.length) {
     return;
   }
 
@@ -920,7 +910,7 @@ redirectToLocalServer();
 setWinner(null);
 restoreSavedUrls();
 restoreFamily();
-if (mobileLayout.matches && !videos.length) loadVideos();
+if (!videos.length) loadVideos();
 if (!videos.length) {
   resetRoulettePosition(buildPlaceholderVideos());
 }
